@@ -1,0 +1,21 @@
+---
+import { withBase } from '../lib/url';
+interface Props { label: string; title: string; href?: string; linkText?: string; }
+const { label, title, href, linkText = 'Vedi tutto' } = Astro.props;
+---
+<div class="sh" data-reveal>
+  <div class="sh-text">
+    <p class="label">{label}</p>
+    <h2 class="sh-title display">{title}</h2>
+  </div>
+  {href && (
+    <a href={withBase(href)} class="sh-link label">{linkText} <span aria-hidden="true">→</span></a>
+  )}
+</div>
+
+<style>
+  .sh { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: clamp(1.6rem, 3vw, 2.6rem); flex-wrap: wrap; }
+  .sh-title { font-size: var(--fs-h2); margin-top: 0.6rem; }
+  .sh-link { color: var(--blood); white-space: nowrap; transition: letter-spacing var(--t-fast); padding-bottom: 0.3rem; }
+  .sh-link:hover { letter-spacing: 0.3em; }
+</style>

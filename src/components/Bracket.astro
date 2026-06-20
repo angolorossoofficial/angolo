@@ -1,0 +1,40 @@
+---
+// Signature element: red viewfinder corner-brackets ("angolo rosso").
+// Drop inside any position:relative container to frame it like a camera reticle.
+interface Props { animate?: boolean; class?: string; }
+const { animate = false, class: cls = '' } = Astro.props;
+---
+<span class:list={['bracket', { 'bracket--anim': animate }, cls]} aria-hidden="true">
+  <i class="bk bk-tl"></i><i class="bk bk-tr"></i>
+  <i class="bk bk-bl"></i><i class="bk bk-br"></i>
+</span>
+
+<style>
+  .bracket {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .bk {
+    position: absolute;
+    width: var(--bracket);
+    height: var(--bracket);
+    border: var(--bracket-w) solid var(--blood);
+    filter: drop-shadow(0 0 6px var(--blood-deep));
+  }
+  .bk-tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .bk-tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+  .bk-bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+  .bk-br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+  .bracket--anim .bk {
+    opacity: 0;
+    transform: scale(1.6);
+    transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .bracket--anim.is-in .bk { opacity: 1; transform: none; }
+  .bracket--anim .bk-tr { transition-delay: 0.06s; }
+  .bracket--anim .bk-bl { transition-delay: 0.12s; }
+  .bracket--anim .bk-br { transition-delay: 0.18s; }
+</style>

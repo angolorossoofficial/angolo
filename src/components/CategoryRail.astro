@@ -1,0 +1,77 @@
+---
+import { withBase } from '../lib/url';
+import { categories } from '../data/sample.js';
+---
+<section class="rail section" id="categorie">
+  <div class="wrap">
+    <div class="rail-head" data-reveal>
+      <p class="label">Le categorie</p>
+      <h2 class="rail-title display">Scegli la tua paura</h2>
+    </div>
+    <ul class="rail-grid">
+      {categories.map((c, i) => (
+        <li class="cat" data-reveal style={`transition-delay:${i * 0.06}s`}>
+          <a href={withBase(`/categoria/${c.slug}`)} class="cat-link">
+            <span class="cat-atmo" style={`background:${c.atmo}`} aria-hidden="true"></span>
+            <span class="cat-noise" aria-hidden="true"></span>
+            <span class="cat-body">
+              <span class="cat-name">{c.title}</span>
+              <span class="cat-tag">{c.tagline}</span>
+            </span>
+            <span class="cat-rule" aria-hidden="true"></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .rail-head { margin-bottom: clamp(1.6rem, 3vw, 2.6rem); }
+  .rail-title { font-size: var(--fs-h2); margin-top: 0.6rem; }
+  .rail-grid {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .cat-link {
+    position: relative; display: block; overflow: hidden;
+    aspect-ratio: 3 / 4; border: 1px solid var(--line);
+    background: var(--ink);
+    transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast);
+  }
+  .cat-atmo {
+    position: absolute; inset: 0;
+    transition: transform var(--t-med) var(--ease-out), filter var(--t-med);
+    filter: saturate(.9) brightness(.85);
+  }
+  .cat-noise {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85));
+  }
+  .cat-body {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; z-index: 2;
+  }
+  .cat-name {
+    font-family: var(--font-display); text-transform: uppercase;
+    font-size: clamp(0.95rem, 1.2vw, 1.4rem); letter-spacing: 0.06em; line-height: 1;
+  }
+  .cat-tag {
+    font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ash); opacity: 0; transform: translateY(6px);
+    transition: opacity var(--t-fast), transform var(--t-fast);
+  }
+  .cat-rule {
+    position: absolute; left: 1rem; bottom: 0.7rem; width: 26px; height: 3px;
+    background: var(--blood); z-index: 2; box-shadow: var(--glow-blood);
+    transition: width var(--t-med) var(--ease-out);
+  }
+  .cat-link:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--blood) 50%, var(--line)); }
+  .cat-link:hover .cat-atmo { transform: scale(1.08); filter: saturate(1.1) brightness(1); }
+  .cat-link:hover .cat-tag { opacity: 1; transform: none; }
+  .cat-link:hover .cat-rule { width: 48px; }
+  .cat-link:focus-visible { outline-offset: 0; }
+
+  @media (max-width: 1100px) { .rail-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .rail-grid { grid-template-columns: repeat(2, 1fr); } .cat-body { padding: 0.8rem; } }
+</style>

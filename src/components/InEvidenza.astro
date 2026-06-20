@@ -1,0 +1,84 @@
+---
+import { withBase } from '../lib/url';
+import Bracket from './Bracket.astro';
+import { featuredReviews, getCategory, RATING_AXES } from '../data/sample.js';
+
+const feat = featuredReviews()[0];
+const cat = getCategory(feat.category);
+const labelFor = { consigliata: 'Consigliata', popolare: 'Popolare', importante: 'Imperdibile' };
+---
+<section class="evid section">
+  <div class="wrap">
+    <p class="label evid-eyebrow" data-reveal>In Evidenza</p>
+    <article class="evid-card" data-reveal>
+      <a href={withBase(`/recensioni/${feat.slug}`)} class="evid-poster">
+        <span class="evid-atmo" style={`background:${feat.atmo}`} aria-hidden="true"></span>
+        <span class="evid-grad" aria-hidden="true"></span>
+        <Bracket animate={true} class="evid-frame" />
+        <span class="evid-badge label">{labelFor[feat.highlight] ?? 'In evidenza'}</span>
+      </a>
+      <div class="evid-body">
+        <p class="evid-cat label">{cat?.title} · {feat.year}</p>
+        <h3 class="evid-title display">{feat.title}</h3>
+        <p class="evid-ex">{feat.excerpt}</p>
+
+        <ul class="evid-ratings">
+          {RATING_AXES.map((a) => (
+            <li>
+              <span class="evid-ra-label">{a.label}</span>
+              <span class="evid-bar"><span class="evid-fill" style={`width:${feat.ratings[a.key] * 10}%`}></span></span>
+            </li>
+          ))}
+        </ul>
+
+        <div class="evid-foot">
+          <span class="evid-final"><small>Voto finale</small><b>{feat.ratings.finale}</b><small>/10</small></span>
+          <a href={withBase(`/recensioni/${feat.slug}`)} class="evid-cta label">Leggi la recensione <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .evid-eyebrow { margin-bottom: 1.4rem; }
+  .evid-card {
+    display: grid; grid-template-columns: 1.2fr 1fr;
+    border: 1px solid var(--line); background: var(--ink); overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .evid-poster { position: relative; min-height: 420px; overflow: hidden; display: block; }
+  .evid-atmo { position: absolute; inset: 0; transition: transform var(--t-slow) var(--ease-out); }
+  .evid-poster:hover .evid-atmo { transform: scale(1.05); }
+  .evid-grad { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 50%, rgba(14,14,19,.9)); }
+  .evid-frame { inset: 18px !important; }
+  .evid-badge {
+    position: absolute; top: 1.1rem; left: 1.1rem; z-index: 4; color: #fff;
+    background: var(--blood); padding: 0.35rem 0.7rem; letter-spacing: 0.2em;
+  }
+  .evid-body { padding: clamp(1.6rem, 3vw, 3rem); display: flex; flex-direction: column; }
+  .evid-cat { margin-bottom: 0.9rem; }
+  .evid-title { font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 1rem; }
+  .evid-ex { font-family: var(--font-read); font-size: 1.1rem; color: var(--bone-dim); line-height: 1.6; margin-bottom: 1.6rem; }
+
+  .evid-ratings { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.6rem; margin-bottom: 1.8rem; }
+  .evid-ratings li { display: flex; flex-direction: column; gap: 0.35rem; }
+  .evid-ra-label { font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ash); }
+  .evid-bar { height: 4px; background: var(--ink-2); border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .evid-fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--blood-deep), var(--blood)); }
+
+  .evid-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.2rem; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .evid-final { font-family: var(--font-display); display: flex; align-items: baseline; gap: 0.4rem; }
+  .evid-final small { font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ash); font-family: var(--font-ui); font-weight: 600; }
+  .evid-final b { font-size: 2.6rem; color: var(--blood); line-height: 0.8; }
+  .evid-cta { color: var(--blood); transition: letter-spacing var(--t-fast); }
+  .evid-cta:hover { letter-spacing: 0.3em; }
+
+  @media (max-width: 880px) {
+    .evid-card { grid-template-columns: 1fr; }
+    .evid-poster { min-height: 280px; }
+    .evid-grad { background: linear-gradient(180deg, transparent 45%, rgba(14,14,19,.9)); }
+    .evid-ratings { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) { .evid-ratings { grid-template-columns: 1fr; } }
+</style>

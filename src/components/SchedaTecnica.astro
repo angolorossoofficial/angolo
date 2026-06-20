@@ -1,0 +1,34 @@
+---
+interface Props { review: any; }
+const { review } = Astro.props;
+const rows = [
+  { k: 'Anno', v: review.year },
+  { k: 'Regia', v: review.director },
+  { k: 'Cast', v: review.cast.join(', ') },
+  { k: 'Durata', v: `${review.runtime} min` },
+  { k: 'Genere', v: review.genres.join(' · ') },
+  { k: 'Paese', v: review.country },
+  { k: 'Titolo orig.', v: review.originalTitle },
+];
+---
+<div class="st">
+  <p class="label st-head">Scheda tecnica</p>
+  <dl class="st-list">
+    {rows.map((r) => (
+      <div class="st-row">
+        <dt>{r.k}</dt>
+        <dd>{r.v}</dd>
+      </div>
+    ))}
+  </dl>
+</div>
+
+<style>
+  .st { background: var(--ink); border: 1px solid var(--line); padding: 1.4rem; }
+  .st-head { margin-bottom: 1.1rem; color: var(--bone-dim); }
+  .st-list { display: flex; flex-direction: column; }
+  .st-row { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px dotted var(--line); }
+  .st-row:last-child { border-bottom: 0; }
+  .st-row dt { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); padding-top: 0.15rem; }
+  .st-row dd { font-size: 0.92rem; color: var(--bone); line-height: 1.45; }
+</style>

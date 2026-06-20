@@ -1,0 +1,21 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import ReviewCard from './ReviewCard.astro';
+import { reviewsByDate } from '../data/sample.js';
+
+const latest = reviewsByDate().slice(0, 6);
+---
+<section class="nuove section">
+  <div class="wrap">
+    <SectionHeading label="Aggiornato di continuo" title="Nuove Recensioni" href="/recensioni" linkText="Tutto l’archivio" />
+    <div class="nuove-grid">
+      {latest.map((r, i) => <ReviewCard review={r} index={i} />)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .nuove-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  @media (max-width: 1000px) { .nuove-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .nuove-grid { grid-template-columns: 1fr; } }
+</style>

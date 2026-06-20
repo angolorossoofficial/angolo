@@ -1,0 +1,144 @@
+---
+import Base from '../../layouts/Base.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import { reviewsByDate, categories } from '../../data/sample.js';
+
+const all = reviewsByDate();
+const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
+const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
+---
+<Base title="Archivio — Angolo Rosso" description="Tutte le recensioni di cinema horror: filtra per categoria, anno, genere e voto, o cerca un titolo.">
+  <section class="arc section">
+    <div class="wrap">
+      <header class="arc-head" data-reveal>
+        <p class="label">L’archivio</p>
+        <h1 class="arc-title display">Tutte le <span class="red">recensioni</span></h1>
+      </header>
+
+      <form class="arc-tools" data-reveal role="search" onsubmit="return false">
+        <div class="arc-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--blood)" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke-linecap="round"/>
+          </svg>
+          <input id="arc-q" type="search" placeholder="Cerca per titolo o regista…" autocomplete="off" aria-label="Cerca" />
+        </div>
+
+        <div class="arc-selects">
+          <label class="arc-field"><span class="label">Anno</span>
+            <select id="arc-year"><option value="">Tutti</option>{years.map((y) => <option value={y}>{y}</option>)}</select>
+          </label>
+          <label class="arc-field"><span class="label">Genere</span>
+            <select id="arc-genre"><option value="">Tutti</option>{genres.map((g) => <option value={g}>{g}</option>)}</select>
+          </label>
+          <label class="arc-field"><span class="label">Voto min.</span>
+            <select id="arc-vote"><option value="0">Tutti</option><option value="6">6+</option><option value="7">7+</option><option value="8">8+</option><option value="9">9+</option></select>
+          </label>
+        </div>
+      </form>
+
+      <div class="arc-chips" data-reveal role="tablist" aria-label="Filtra per categoria">
+        <button class="chip is-on" data-cat="" type="button">Tutte</button>
+        {categories.map((c) => <button class="chip" data-cat={c.slug} type="button">{c.title}</button>)}
+      </div>
+
+      <p class="arc-count label" id="arc-count" data-reveal></p>
+
+      <div class="arc-grid" id="arc-grid">
+        {all.map((r, i) => (
+          <div class="arc-item" data-cat={r.category} data-year={r.year}
+            data-genres={r.genres.join('|').toLowerCase()} data-vote={r.ratings.finale}
+            data-text={`${r.title} ${r.director} ${r.originalTitle}`.toLowerCase()}>
+            <ReviewCard review={r} index={i} />
+          </div>
+        ))}
+      </div>
+      <p class="arc-empty" id="arc-empty" hidden>Nessuna recensione trovata. <span class="red">Prova ad allentare i filtri.</span></p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .arc-head { margin-bottom: 2rem; }
+  .arc-title { font-size: var(--fs-h1); margin-top: 0.6rem; }
+
+  .arc-tools { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.4rem; }
+  .arc-search { position: relative; flex: 1 1 320px; display: flex; align-items: center; border-bottom: 2px solid var(--line); transition: border-color var(--t-fast); }
+  .arc-search:focus-within { border-color: var(--blood); }
+  .arc-search svg { width: 20px; height: 20px; flex: none; }
+  .arc-search input { flex: 1; background: transparent; border: none; outline: none; color: var(--bone); font-size: 1.1rem; padding: 0.7rem 0.6rem; }
+  .arc-search input::placeholder { color: var(--ash-dim); }
+
+  .arc-selects { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .arc-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .arc-field select {
+    background: var(--ink); color: var(--bone); border: 1px solid var(--line);
+    padding: 0.55rem 0.8rem; font: inherit; font-size: 0.9rem; cursor: pointer; border-radius: 2px;
+  }
+  .arc-field select:focus-visible { border-color: var(--blood); outline: none; }
+
+  .arc-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+  .chip {
+    font-family: var(--font-ui); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--bone-dim); background: var(--ink); border: 1px solid var(--line);
+    padding: 0.5rem 0.95rem; border-radius: 99px; transition: all var(--t-fast);
+  }
+  .chip:hover { border-color: color-mix(in srgb, var(--blood) 50%, var(--line)); color: var(--bone); }
+  .chip.is-on { background: var(--blood); border-color: var(--blood); color: #fff; }
+
+  .arc-count { margin-bottom: 1.4rem; color: var(--ash); }
+  .arc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .arc-item.is-hidden { display: none; }
+  .arc-empty { font-family: var(--font-read); font-size: 1.2rem; color: var(--bone-dim); padding: 3rem 0; text-align: center; }
+
+  @media (max-width: 1000px) { .arc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .arc-grid { grid-template-columns: 1fr; } .arc-selects { width: 100%; } }
+</style>
+
+<script>
+  const q = document.getElementById('arc-q') as HTMLInputElement;
+  const yearSel = document.getElementById('arc-year') as HTMLSelectElement;
+  const genreSel = document.getElementById('arc-genre') as HTMLSelectElement;
+  const voteSel = document.getElementById('arc-vote') as HTMLSelectElement;
+  const chips = Array.from(document.querySelectorAll('.chip')) as HTMLButtonElement[];
+  const items = Array.from(document.querySelectorAll('.arc-item')) as HTMLElement[];
+  const countEl = document.getElementById('arc-count')!;
+  const emptyEl = document.getElementById('arc-empty')!;
+  let cat = '';
+
+  // honour ?q= from the header search
+  const params = new URLSearchParams(location.search);
+  if (params.get('q')) q.value = params.get('q')!;
+
+  function apply() {
+    const text = q.value.trim().toLowerCase();
+    const year = yearSel.value;
+    const genre = genreSel.value.toLowerCase();
+    const minVote = Number(voteSel.value);
+    let shown = 0;
+
+    items.forEach((el) => {
+      const ok =
+        (!cat || el.dataset.cat === cat) &&
+        (!year || el.dataset.year === year) &&
+        (!genre || (el.dataset.genres || '').includes(genre)) &&
+        Number(el.dataset.vote) >= minVote &&
+        (!text || (el.dataset.text || '').includes(text));
+      el.classList.toggle('is-hidden', !ok);
+      if (ok) shown++;
+    });
+
+    countEl.textContent = `${shown} ${shown === 1 ? 'recensione' : 'recensioni'}`;
+    emptyEl.hidden = shown !== 0;
+  }
+
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      chips.forEach((x) => x.classList.remove('is-on'));
+      c.classList.add('is-on');
+      cat = c.dataset.cat || '';
+      apply();
+    })
+  );
+  [q, yearSel, genreSel, voteSel].forEach((el) => el.addEventListener('input', apply));
+  apply();
+</script>

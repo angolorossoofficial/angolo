@@ -1,0 +1,66 @@
+/* Angolo Rosso — design tokens
+   Giallo / horror cinema. Near-black void + blood red. Boldness lives in the
+   red viewfinder corner-brackets ("angolo rosso") and the film-grain atmosphere. */
+
+:root {
+  /* — color — */
+  --void: #07070a; /* base, a blue-cold black */
+  --void-2: #0a0a0f;
+  --ink: #0e0e13; /* raised panel */
+  --ink-2: #14141b; /* card / hover */
+  --line: #20202b; /* hairline borders */
+
+  --blood: #e10600; /* primary accent */
+  --blood-bright: #ff1f12; /* hover / glow core */
+  --blood-deep: #8a0303; /* deep glow, gradients */
+
+  --bone: #ede9e3; /* primary text — warm off-white, filmic */
+  --bone-dim: #b9b4ad;
+  --ash: #807c86; /* captions, meta */
+  --ash-dim: #56535d;
+
+  --neon-cold: #3a6bff; /* only inside imagery accents */
+
+  /* — type — */
+  --font-display: 'Anton', 'Arial Narrow', sans-serif; /* brutal condensed poster */
+  --font-ui: 'Archivo Variable', 'Archivo', system-ui, sans-serif; /* technical UI/labels */
+  --font-read: 'Spectral', Georgia, serif; /* editorial review prose */
+
+  /* fluid type scale */
+  --fs-mega: clamp(3.5rem, 11vw, 10rem);
+  --fs-hero: clamp(2.75rem, 8.5vw, 7.5rem);
+  --fs-h1: clamp(2.25rem, 5vw, 4rem);
+  --fs-h2: clamp(1.75rem, 3.4vw, 2.75rem);
+  --fs-h3: clamp(1.25rem, 2vw, 1.6rem);
+  --fs-body: clamp(1rem, 1.05vw, 1.1rem);
+  --fs-read: clamp(1.08rem, 1.2vw, 1.22rem);
+  --fs-label: 0.72rem;
+  --fs-meta: 0.78rem;
+
+  --tracking-label: 0.26em;
+  --tracking-wide: 0.18em;
+
+  /* — space — */
+  --pad-x: clamp(1.25rem, 5vw, 5.5rem);
+  --gap: clamp(1rem, 2vw, 1.75rem);
+  --section-y: clamp(4.5rem, 9vw, 9rem);
+  --maxw: 1560px;
+  --maxw-read: 68ch;
+
+  /* — form — */
+  --radius: 2px; /* near-sharp, poster-like */
+  --bracket: 26px; /* viewfinder corner length */
+  --bracket-w: 2px;
+
+  /* — glow / shadow — */
+  --glow-blood: 0 0 0.5px var(--blood), 0 0 24px -6px var(--blood-deep);
+  --shadow-card: 0 24px 60px -28px #000, 0 4px 16px -8px #000;
+  --vignette: radial-gradient(120% 90% at 50% 30%, transparent 40%, #000 130%);
+
+  /* — motion — */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast: 0.25s;
+  --t-med: 0.5s;
+  --t-slow: 0.9s;
+}

@@ -1,0 +1,49 @@
+---
+import { withBase } from '../lib/url';
+import { getCategory } from '../data/sample.js';
+
+interface Props { review: any; index?: number; }
+const { review, index = 0 } = Astro.props;
+const cat = getCategory(review.category);
+---
+<article class="card" data-reveal style={`transition-delay:${(index % 3) * 0.07}s`}>
+  <a href={withBase(`/recensioni/${review.slug}`)} class="card-link">
+    <div class="card-poster">
+      <span class="card-atmo" style={`background:${review.atmo}`} aria-hidden="true"></span>
+      <span class="card-grad" aria-hidden="true"></span>
+      <span class="card-cat label">{cat?.title}</span>
+      <span class="card-vote"><b>{review.ratings.finale}</b><small>/10</small></span>
+    </div>
+    <div class="card-body">
+      <h3 class="card-title display">{review.title}</h3>
+      <p class="card-meta">{review.year} · {review.director} · {review.runtime}′</p>
+      <p class="card-ex">{review.excerpt}</p>
+      <span class="card-more label">Leggi la recensione <span aria-hidden="true">→</span></span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card { background: var(--ink); border: 1px solid var(--line); transition: border-color var(--t-fast), transform var(--t-fast); }
+  .card:hover { border-color: color-mix(in srgb, var(--blood) 45%, var(--line)); transform: translateY(-4px); }
+  .card-link { display: flex; flex-direction: column; height: 100%; }
+  .card-poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+  .card-atmo { position: absolute; inset: 0; transition: transform var(--t-med) var(--ease-out); filter: brightness(.9); }
+  .card:hover .card-atmo { transform: scale(1.06); filter: brightness(1.05); }
+  .card-grad { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(7,7,10,.9)); }
+  .card-cat { position: absolute; top: 0.85rem; left: 0.9rem; z-index: 2; color: var(--bone); }
+  .card-vote {
+    position: absolute; bottom: 0.7rem; right: 0.9rem; z-index: 2;
+    font-family: var(--font-display); display: flex; align-items: baseline; gap: 1px;
+    background: rgba(7,7,10,.7); border: 1px solid color-mix(in srgb, var(--blood) 50%, var(--line));
+    padding: 0.15rem 0.5rem; backdrop-filter: blur(4px);
+  }
+  .card-vote b { font-size: 1.3rem; color: var(--blood); line-height: 1; }
+  .card-vote small { font-size: 0.7rem; color: var(--ash); }
+  .card-body { padding: 1.1rem 1.1rem 1.3rem; display: flex; flex-direction: column; flex: 1; }
+  .card-title { font-size: clamp(1.2rem, 1.6vw, 1.55rem); margin-bottom: 0.5rem; }
+  .card-meta { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ash); margin-bottom: 0.7rem; }
+  .card-ex { font-family: var(--font-read); color: var(--bone-dim); font-size: 0.96rem; line-height: 1.55; margin-bottom: 1rem; }
+  .card-more { margin-top: auto; color: var(--blood); transition: letter-spacing var(--t-fast); }
+  .card:hover .card-more { letter-spacing: 0.3em; }
+</style>

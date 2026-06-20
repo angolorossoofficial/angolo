@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bracket from '../../components/Bracket.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import { withBase } from '../../lib/url';
+import { categories, reviews, reviewsByDate } from '../../data/sample.js';
+
+export function getStaticPaths() {
+  return categories.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const list = reviewsByDate().filter((r) => r.category === category.slug);
+---
+<Base title={`${category.title} — Angolo Rosso`} description={`Recensioni horror della categoria ${category.title}. ${category.tagline}.`}>
+  <section class="cat-hero">
+    <span class="cat-hero-atmo" style={`background:${category.atmo}`} aria-hidden="true"></span>
+    <span class="cat-hero-grad" aria-hidden="true"></span>
+    <Bracket animate={true} class="cat-hero-frame" />
+    <div class="wrap cat-hero-in">
+      <a href={withBase('/recensioni')} class="cat-back label">← Archivio</a>
+      <p class="label cat-kicker">Categoria</p>
+      <h1 class="cat-h1 display">{category.title}</h1>
+      <p class="cat-tagline">{category.tagline}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      {list.length > 0 ? (
+        <div class="cat-grid">
+          {list.map((r, i) => <ReviewCard review={r} index={i} />)}
+        </div>
+      ) : (
+        <p class="cat-empty">Ancora nessuna recensione in questa categoria. <span class="red">Torna presto.</span></p>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cat-hero { position: relative; min-height: 52vh; display: flex; align-items: flex-end; overflow: hidden; padding-top: 6rem; }
+  .cat-hero-atmo { position: absolute; inset: 0; transform: scale(1.05); }
+  .cat-hero-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.55), transparent 35%, rgba(7,7,10,.95)); }
+  .cat-hero-frame { inset: clamp(14px,2vw,30px) !important; }
+  .cat-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .cat-back { display: inline-block; color: var(--bone-dim); margin-bottom: 1.4rem; transition: color var(--t-fast); }
+  .cat-back:hover { color: var(--blood); }
+  .cat-kicker { color: var(--blood); margin-bottom: 0.8rem; }
+  .cat-h1 { font-size: var(--fs-mega); }
+  .cat-tagline { font-family: var(--font-read); font-style: italic; font-size: 1.3rem; color: var(--bone-dim); margin-top: 0.8rem; }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .cat-empty { font-family: var(--font-read); font-size: 1.3rem; color: var(--bone-dim); padding: 2rem 0; }
+  @media (max-width: 1000px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .cat-grid { grid-template-columns: 1fr; } }
+</style>

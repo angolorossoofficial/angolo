@@ -1,0 +1,21 @@
+# build output
+dist/
+.astro/
+
+# local-only working files & heavy deliverables (regenerable)
+.tmp/
+docs/*.pdf
+
+# deps
+node_modules/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+*.log
+.vscode/
+.idea/

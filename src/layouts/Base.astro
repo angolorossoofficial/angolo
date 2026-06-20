@@ -1,0 +1,73 @@
+---
+import '@fontsource/anton';
+import '@fontsource-variable/archivo';
+import '@fontsource/spectral/400.css';
+import '@fontsource/spectral/500.css';
+import '@fontsource/spectral/600.css';
+import '@fontsource/spectral/400-italic.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props { title?: string; description?: string; }
+const {
+  title = 'Angolo Rosso — Recensioni di Cinema Horror',
+  description = 'Recensioni di cinema horror con un’anima: disturbante, occulto, splatter, classici, asiatico, midnight. Quanto vuoi spingerti oltre?',
+} = Astro.props;
+---
+<!doctype html>
+<html lang="it" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07070a" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}/favicon.svg`} type="image/svg+xml" />
+    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Salta al contenuto</a>
+
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- atmosphere -->
+    <div class="fx fx-vignette"></div>
+    <div class="fx fx-scanlines"></div>
+    <div class="fx fx-grain"></div>
+
+    <script>
+      import Lenis from 'lenis';
+      import { gsap } from 'gsap';
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      gsap.registerPlugin(ScrollTrigger);
+
+      if (!reduce) {
+        const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((t) => lenis.raf(t * 1000));
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      // scroll reveals
+      const SEL = '[data-reveal], .bracket--anim';
+      if (reduce) {
+        document.querySelectorAll(SEL).forEach((el) => el.classList.add('is-in'));
+      } else {
+        ScrollTrigger.batch(SEL, {
+          start: 'top 90%',
+          onEnter: (els) => els.forEach((el) => el.classList.add('is-in')),
+        });
+      }
+    </script>
+  </body>
+</html>

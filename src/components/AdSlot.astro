@@ -1,0 +1,25 @@
+---
+// Discreet, reserved ad space. Holds layout so real banners drop in without
+// shifting the page. Labelled so it never feels deceptive.
+interface Props { variant?: 'leaderboard' | 'inline'; }
+const { variant = 'leaderboard' } = Astro.props;
+---
+<aside class:list={['ad', `ad--${variant}`]} data-reveal aria-label="Spazio pubblicitario">
+  <div class="wrap">
+    <div class="ad-box">
+      <span class="label">Spazio pubblicitario</span>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .ad { padding-block: clamp(1.5rem, 3vw, 2.5rem); }
+  .ad-box {
+    display: grid; place-items: center;
+    border: 1px dashed var(--line); background: color-mix(in srgb, var(--ink) 60%, transparent);
+    color: var(--ash-dim);
+  }
+  .ad--leaderboard .ad-box { aspect-ratio: 970 / 120; max-height: 130px; }
+  .ad--inline .ad-box { aspect-ratio: 300 / 100; max-width: 360px; margin-inline: auto; }
+  .ad .label { color: var(--ash-dim); }
+</style>

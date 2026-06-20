@@ -1,0 +1,137 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bracket from '../../components/Bracket.astro';
+import RatingPanel from '../../components/RatingPanel.astro';
+import SchedaTecnica from '../../components/SchedaTecnica.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import { withBase } from '../../lib/url';
+import { reviews, getCategory } from '../../data/sample.js';
+
+export function getStaticPaths() {
+  return reviews.map((r) => ({ params: { slug: r.slug }, props: { review: r } }));
+}
+
+const { review } = Astro.props;
+const cat = getCategory(review.category);
+const related = reviews.filter((r) => r.category === review.category && r.slug !== review.slug).slice(0, 3);
+const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt}>
+  <article class="rev">
+    <!-- hero -->
+    <header class="rev-hero">
+      <span class="rev-atmo" style={`background:${review.atmo}`} aria-hidden="true"></span>
+      <span class="rev-hero-grad" aria-hidden="true"></span>
+      <div class="wrap rev-hero-in">
+        <a href={withBase(`/categoria/${review.category}`)} class="rev-cat label">{cat?.title}</a>
+        <h1 class="rev-title display">{review.title}</h1>
+        <p class="rev-orig">{review.originalTitle} · {review.year}</p>
+        <p class="rev-byline label">Recensione della redazione · {date}</p>
+      </div>
+    </header>
+
+    <div class="wrap rev-grid">
+      <!-- main column -->
+      <div class="rev-main">
+        <p class="rev-lead" data-reveal>{review.excerpt}</p>
+        <div class="rev-body" data-reveal>
+          {review.body.map((p: string) => <p>{p}</p>)}
+        </div>
+
+        <!-- gallery -->
+        <section class="rev-gallery" data-reveal aria-label="Galleria">
+          <p class="label rev-block-label">Dal film</p>
+          <div class="rev-gallery-grid">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <span class="rev-shot" style={`background:${review.atmo};filter:hue-rotate(${i * 24}deg) brightness(${0.8 + i * 0.1})`} aria-hidden="true"></span>
+            ))}
+          </div>
+        </section>
+
+        <!-- trailer -->
+        <section class="rev-trailer" data-reveal aria-label="Trailer">
+          <p class="label rev-block-label">Trailer</p>
+          <div class="rev-embed">
+            <iframe src={review.trailer} title={`Trailer — ${review.title}`} loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </section>
+
+        <!-- comments / public vote — v2 placeholder -->
+        <section class="rev-engage" data-reveal>
+          <Bracket class="rev-engage-frame" />
+          <p class="label">Commenti &amp; voto del pubblico</p>
+          <p class="rev-engage-soon">In arrivo — qui i lettori potranno commentare e dare il loro voto, da confrontare con quello della redazione.</p>
+        </section>
+      </div>
+
+      <!-- sidebar -->
+      <aside class="rev-side">
+        <div class="rev-side-sticky">
+          <RatingPanel ratings={review.ratings} />
+          <SchedaTecnica review={review} />
+        </div>
+      </aside>
+    </div>
+
+    {related.length > 0 && (
+      <section class="rev-related section">
+        <div class="wrap">
+          <p class="label rev-block-label" data-reveal>Dalla stessa categoria</p>
+          <div class="rev-related-grid">
+            {related.map((r, i) => <ReviewCard review={r} index={i} />)}
+          </div>
+        </div>
+      </section>
+    )}
+  </article>
+</Base>
+
+<style>
+  .rev-hero { position: relative; min-height: 64vh; display: flex; align-items: flex-end; overflow: hidden; padding-top: 6rem; }
+  .rev-atmo { position: absolute; inset: 0; transform: scale(1.05); }
+  .rev-hero-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.5) 0%, transparent 30%, rgba(7,7,10,.95) 92%); }
+  .rev-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 4rem); }
+  .rev-cat { display: inline-block; color: var(--blood); margin-bottom: 1rem; }
+  .rev-title { font-size: var(--fs-h1); max-width: 18ch; }
+  .rev-orig { font-family: var(--font-read); font-style: italic; color: var(--bone-dim); margin-top: 0.8rem; font-size: 1.1rem; }
+  .rev-byline { margin-top: 1rem; }
+
+  .rev-grid { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: clamp(2rem, 5vw, 4.5rem); padding-top: clamp(2.5rem, 5vw, 4rem); }
+  .rev-lead {
+    font-family: var(--font-read); font-size: clamp(1.3rem, 2vw, 1.7rem); line-height: 1.5;
+    color: var(--bone); border-left: 3px solid var(--blood); padding-left: 1.4rem; margin-bottom: 2.2rem;
+  }
+  .rev-body { max-width: var(--maxw-read); }
+  .rev-body p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  .rev-body p:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+
+  .rev-block-label { margin-bottom: 1.1rem; }
+  .rev-gallery { margin-top: 3rem; }
+  .rev-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .rev-shot { aspect-ratio: 3 / 2; border: 1px solid var(--line); transition: transform var(--t-fast); }
+  .rev-shot:hover { transform: scale(1.02); }
+
+  .rev-trailer { margin-top: 3rem; }
+  .rev-embed { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #000; }
+  .rev-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  .rev-engage { position: relative; margin-top: 3rem; padding: clamp(1.6rem, 3vw, 2.4rem); background: var(--ink); border: 1px solid var(--line); }
+  .rev-engage-frame { inset: 9px !important; }
+  .rev-engage-soon { font-family: var(--font-read); color: var(--bone-dim); margin-top: 0.8rem; max-width: 54ch; line-height: 1.6; }
+
+  .rev-side-sticky { position: sticky; top: 6rem; display: flex; flex-direction: column; gap: var(--gap); }
+
+  .rev-related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+
+  @media (max-width: 920px) {
+    .rev-grid { grid-template-columns: 1fr; }
+    .rev-side-sticky { position: static; flex-direction: row; flex-wrap: wrap; }
+    .rev-side-sticky > * { flex: 1 1 300px; }
+    .rev-related-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .rev-gallery-grid { grid-template-columns: 1fr 1fr; }
+    .rev-related-grid { grid-template-columns: 1fr; }
+  }
+</style>

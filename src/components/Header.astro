@@ -1,0 +1,191 @@
+---
+import { withBase } from '../lib/url';
+import { categories } from '../data/sample.js';
+
+const nav = [
+  { label: 'Home', href: withBase('/') },
+  { label: 'Archivio', href: withBase('/recensioni') },
+];
+---
+<header class="hd" data-header>
+  <div class="hd-inner wrap">
+    <button class="hd-btn hd-menu" aria-label="Apri il menu" aria-expanded="false" data-menu-open>
+      <span></span><span></span><span></span>
+    </button>
+
+    <a class="logo" href={withBase('/')} aria-label="Angolo Rosso — home">
+      <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 5 L43 39 H5 Z" fill="none" stroke="var(--blood)" stroke-width="2.4" stroke-linejoin="round"/>
+        <circle cx="24" cy="29" r="6.5" fill="none" stroke="var(--blood)" stroke-width="2.4"/>
+        <circle cx="24" cy="29" r="1.8" fill="var(--blood)"/>
+        <line x1="24" y1="12" x2="24" y2="20" stroke="var(--blood)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">
+        <span class="logo-name">Angolo <span class="red">Rosso</span></span>
+        <span class="logo-sub">Recensioni di Cinema Horror</span>
+      </span>
+    </a>
+
+    <button class="hd-btn hd-search" aria-label="Cerca" data-search-open>
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--blood)" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- full-screen menu -->
+<nav class="menu" data-menu aria-hidden="true">
+  <button class="menu-close hd-btn" aria-label="Chiudi il menu" data-menu-close>
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--bone)" stroke-width="2" aria-hidden="true">
+      <line x1="5" y1="5" x2="19" y2="19" stroke-linecap="round"/>
+      <line x1="19" y1="5" x2="5" y2="19" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <div class="menu-grid wrap">
+    <div class="menu-col">
+      <p class="label">Naviga</p>
+      <ul class="menu-list menu-list--big">
+        {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+      </ul>
+    </div>
+    <div class="menu-col">
+      <p class="label">Categorie</p>
+      <ul class="menu-list menu-list--cats">
+        {categories.map((c) => (
+          <li><a href={withBase(`/categoria/${c.slug}`)}>{c.title}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  <p class="menu-foot label">Ogni categoria nasconde un mondo. <span class="red">Sei pronto a entrarci?</span></p>
+</nav>
+
+<!-- search overlay -->
+<div class="srch" data-search aria-hidden="true">
+  <button class="menu-close hd-btn" aria-label="Chiudi la ricerca" data-search-close>
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--bone)" stroke-width="2" aria-hidden="true">
+      <line x1="5" y1="5" x2="19" y2="19" stroke-linecap="round"/>
+      <line x1="19" y1="5" x2="5" y2="19" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <form class="srch-form wrap" action={withBase('/recensioni')} method="get">
+    <label class="label" for="q">Cerca un film</label>
+    <input id="q" name="q" type="search" placeholder="Titolo, regista, anno…" autocomplete="off" />
+    <p class="srch-hint label">Premi invio per cercare nell’archivio</p>
+  </form>
+</div>
+
+<style>
+  .hd {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    transition: background var(--t-fast) var(--ease-out), backdrop-filter var(--t-fast);
+  }
+  .hd[data-scrolled] {
+    background: color-mix(in srgb, var(--void) 82%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .hd-inner {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    padding-block: clamp(0.9rem, 1.6vw, 1.4rem);
+  }
+  .hd-btn { display: grid; place-items: center; width: 44px; height: 44px; transition: transform var(--t-fast); }
+  .hd-btn:hover { transform: translateY(-1px); }
+  .hd-search { justify-self: end; }
+  .hd-search svg { width: 22px; height: 22px; }
+
+  .hd-menu { justify-self: start; gap: 5px; }
+  .hd-menu span { display: block; width: 24px; height: 2px; background: var(--blood); transition: transform var(--t-fast); }
+  .hd-menu:hover span:nth-child(2) { transform: scaleX(0.6); transform-origin: left; }
+
+  .logo { display: flex; align-items: center; gap: 0.7rem; justify-self: center; }
+  .logo-mark { width: 38px; height: 38px; filter: drop-shadow(0 0 8px var(--blood-deep)); }
+  .logo-text { display: flex; flex-direction: column; line-height: 1; }
+  .logo-name {
+    font-family: var(--font-display); text-transform: uppercase;
+    font-size: clamp(1.05rem, 1.6vw, 1.5rem); letter-spacing: 0.14em;
+  }
+  .logo-sub {
+    font-size: 0.56rem; letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--ash); margin-top: 0.32rem; font-weight: 600;
+  }
+
+  /* menu + search overlays */
+  .menu, .srch {
+    position: fixed; inset: 0; z-index: 60;
+    background: color-mix(in srgb, var(--void) 96%, #000);
+    backdrop-filter: blur(6px);
+    opacity: 0; visibility: hidden; transform: translateY(-1.5%);
+    transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), visibility var(--t-med);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .menu.is-open, .srch.is-open { opacity: 1; visibility: visible; transform: none; }
+  .menu-close { position: absolute; top: clamp(1rem,2vw,1.6rem); right: var(--pad-x); width: 44px; height: 44px; }
+  .menu-close svg { width: 24px; height: 24px; }
+
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,6vw,6rem); }
+  .menu-col .label { margin-bottom: 1.4rem; }
+  .menu-list--big a {
+    font-family: var(--font-display); text-transform: uppercase;
+    font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1.02; letter-spacing: 0.01em;
+    display: inline-block; transition: color var(--t-fast), transform var(--t-fast);
+  }
+  .menu-list--cats { columns: 2; column-gap: 2rem; }
+  .menu-list--cats a {
+    font-family: var(--font-ui); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.16em; font-size: 1rem; padding-block: 0.5rem; display: inline-block;
+    transition: color var(--t-fast), padding-left var(--t-fast);
+  }
+  .menu-list a:hover { color: var(--blood); }
+  .menu-list--cats a:hover { padding-left: 0.5rem; }
+  .menu-list--big a:hover { transform: translateX(0.4rem); }
+  .menu-list li { margin-bottom: 0.4rem; }
+  .menu-foot { position: absolute; bottom: clamp(1.4rem,3vw,2.4rem); left: var(--pad-x); }
+
+  .srch-form { display: flex; flex-direction: column; gap: 1rem; }
+  .srch-form input {
+    background: transparent; border: none; border-bottom: 2px solid var(--line);
+    color: var(--bone); font-family: var(--font-display); text-transform: uppercase;
+    font-size: clamp(1.8rem, 6vw, 4rem); padding: 0.4rem 0; outline: none;
+    transition: border-color var(--t-fast);
+  }
+  .srch-form input::placeholder { color: var(--ash-dim); }
+  .srch-form input:focus { border-color: var(--blood); }
+  .srch-hint { margin-top: 0.4rem; }
+
+  @media (max-width: 720px) {
+    .logo-sub { display: none; }
+    .menu-grid { grid-template-columns: 1fr; gap: 2.4rem; }
+    .menu-list--cats { columns: 1; }
+  }
+  @media (max-width: 520px) { .logo-name { font-size: 1.05rem; letter-spacing: 0.1em; } }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const hd = document.querySelector('[data-header]');
+  const menu = document.querySelector('[data-menu]');
+  const srch = document.querySelector('[data-search]');
+
+  const setOpen = (el: Element | null, open: boolean) => {
+    if (!el) return;
+    el.classList.toggle('is-open', open);
+    el.setAttribute('aria-hidden', String(!open));
+    root.style.overflow = open ? 'hidden' : '';
+    if (open && el === srch) (el.querySelector('input') as HTMLInputElement | null)?.focus();
+  };
+
+  document.querySelector('[data-menu-open]')?.addEventListener('click', () => setOpen(menu, true));
+  document.querySelector('[data-menu-close]')?.addEventListener('click', () => setOpen(menu, false));
+  document.querySelector('[data-search-open]')?.addEventListener('click', () => setOpen(srch, true));
+  document.querySelector('[data-search-close]')?.addEventListener('click', () => setOpen(srch, false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { setOpen(menu, false); setOpen(srch, false); }
+  });
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(menu, false)));
+
+  const onScroll = () => hd?.toggleAttribute('data-scrolled', window.scrollY > 24);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>

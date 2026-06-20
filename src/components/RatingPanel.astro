@@ -1,0 +1,53 @@
+---
+import Bracket from './Bracket.astro';
+import { RATING_AXES } from '../data/sample.js';
+interface Props { ratings: Record<string, number>; }
+const { ratings } = Astro.props;
+---
+<div class="rp">
+  <Bracket class="rp-frame" />
+  <p class="label rp-head">Il verdetto della redazione</p>
+
+  <ul class="rp-axes">
+    {RATING_AXES.map((a) => {
+      const v = ratings[a.key] ?? 0;
+      return (
+        <li class="rp-axis">
+          <div class="rp-axis-top">
+            <span class="rp-axis-label">{a.label}</span>
+            <span class="rp-axis-val">{v}</span>
+          </div>
+          <span class="rp-skulls" role="img" aria-label={`${a.label}: ${v} su 10`}>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <span class:list={['rp-skull', { on: i < v }]} aria-hidden="true"></span>
+            ))}
+          </span>
+        </li>
+      );
+    })}
+  </ul>
+
+  <div class="rp-final">
+    <span class="label">Voto finale</span>
+    <span class="rp-final-num"><b>{ratings.finale}</b><small>/10</small></span>
+  </div>
+</div>
+
+<style>
+  .rp { position: relative; background: var(--ink); border: 1px solid var(--line); padding: 1.5rem 1.4rem 1.4rem; box-shadow: var(--shadow-card); }
+  .rp-frame { inset: 9px !important; }
+  .rp-head { margin-bottom: 1.3rem; color: var(--bone-dim); }
+  .rp-axes { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.4rem; }
+  .rp-axis-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.4rem; }
+  .rp-axis-label { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bone); font-weight: 600; }
+  .rp-axis-val { font-family: var(--font-display); font-size: 1rem; color: var(--ash); }
+  .rp-skulls { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+  .rp-skull { height: 8px; background: var(--ink-2); border: 1px solid var(--line); transition: background var(--t-fast); }
+  .rp-skull.on { background: linear-gradient(180deg, var(--blood-bright), var(--blood-deep)); border-color: var(--blood); box-shadow: 0 0 6px -1px var(--blood-deep); }
+
+  .rp-final { display: flex; align-items: center; justify-content: space-between; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .rp-final .label { color: var(--bone); }
+  .rp-final-num { font-family: var(--font-display); display: flex; align-items: baseline; gap: 0.2rem; }
+  .rp-final-num b { font-size: 3.4rem; color: var(--blood); line-height: 0.8; text-shadow: 0 0 24px rgba(225,6,0,.4); }
+  .rp-final-num small { font-size: 0.9rem; color: var(--ash); }
+</style>
