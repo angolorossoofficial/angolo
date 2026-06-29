@@ -13,6 +13,7 @@
     "@fontsource-variable/archivo": "^5.1.0",
     "@fontsource/anton": "^5.1.0",
     "@fontsource/spectral": "^5.1.0",
+    "@sanity/client": "^7.0.0",
     "astro": "^5.2.0",
     "gsap": "^3.12.5",
     "lenis": "^1.1.18"

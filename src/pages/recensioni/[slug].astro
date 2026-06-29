@@ -35,7 +35,7 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
       <div class="rev-main">
         <p class="rev-lead" data-reveal>{review.excerpt}</p>
         <div class="rev-body" data-reveal>
-          {review.body.map((p: string) => <p>{p}</p>)}
+          {review.body.map((p: string) => <p set:html={p} />)}
         </div>
 
         <!-- gallery -->

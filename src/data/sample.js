@@ -1,160 +1,127 @@
-// Prototype seed data. Phase 2 replaces this with Sanity queries (same shape).
-// Atmospheres are CSS gradients standing in for real stills/posters until the
-// client supplies licensed imagery.
+// Content layer — Phase 2.
+// Replaces the prototype seed: data now comes from Sanity (project angolorosso,
+// dataset `production`, public read so no token needed at build time).
+// Kept at this path/filename so the components/pages that import it are unchanged.
+//
+// Exports the SAME shape the prototype used, so the UI keeps working:
+//   categories     [{ slug, title, tagline, atmo }]
+//   reviews        [{ slug, title, originalTitle, category(slug), year, director,
+//                     cast[], runtime, country, genres[], excerpt, publishedAt,
+//                     highlight, trailer, ratings{...axes, finale}, atmo, body[] }]
+//   RATING_AXES, getCategory(slug), reviewsByDate(), featuredReviews()
+//
+// `atmo` is a CSS `background` value that drives every card/hero. It resolves to,
+// in order: the review poster image -> a per-review gradient -> the category
+// gradient -> a default. So reviews render with or without a poster.
 
-export const categories = [
-  { slug: 'disturbanti', title: 'Disturbanti', tagline: 'Sotto la pelle',
-    atmo: 'linear-gradient(160deg,#0c0d14,#161420 55%,#241016)' },
-  { slug: 'occulto', title: 'Occulto', tagline: 'Ciò che non si nomina',
-    atmo: 'radial-gradient(120% 100% at 30% 20%,#1a1230,#0a0712 70%)' },
-  { slug: 'splatter', title: 'Splatter', tagline: 'Senza tagli',
-    atmo: 'radial-gradient(120% 120% at 70% 40%,#2a0608,#0b0709 70%)' },
-  { slug: 'classici', title: 'Classici', tagline: 'La paura ha memoria',
-    atmo: 'linear-gradient(180deg,#14151b,#0a0b10)' },
-  { slug: 'asiatico', title: 'Asiatico', tagline: 'Spettri d’oriente',
-    atmo: 'linear-gradient(150deg,#0a0f14,#1d0c1a 60%,#2a0d12)' },
-  { slug: 'midnight', title: 'Midnight', tagline: 'Dopo mezzanotte',
-    atmo: 'radial-gradient(140% 120% at 80% 90%,#160a1e,#070710 65%)' },
-];
+import { createClient } from '@sanity/client';
 
-export const reviews = [
-  {
-    slug: 'la-casa-del-vetro-rotto',
-    title: 'La Casa del Vetro Rotto',
-    originalTitle: 'The House of Broken Glass',
-    category: 'disturbanti',
-    year: 2024,
-    director: 'Elina Vos',
-    cast: ['Marisa Cole', 'Tomas Renner', 'Yui Nakamura'],
-    runtime: 112,
-    country: 'Italia / Giappone',
-    genres: ['Psicologico', 'Soprannaturale'],
-    excerpt:
-      'Un lutto che non si chiude diventa una casa che non smette di respirare. ' +
-      'Vos firma il film più claustrofobico dell’anno.',
-    publishedAt: '2026-06-18',
-    highlight: 'consigliata',
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 6, splatter: 4, musiche: 9, trucco: 8, effetti: 7, costumi: 8, finale: 9 },
-    atmo: 'radial-gradient(120% 100% at 35% 25%,#241018,#0b0810 70%)',
-    body: [
-      'C’è un momento, a metà film, in cui la macchina da presa indugia su una finestra incrinata e non succede niente. Per quaranta secondi. È il pezzo di cinema horror più spaventoso che vedrete quest’anno proprio perché non vi concede lo scarico di uno spavento.',
-      'Vos costruisce il terrore per sottrazione: meno vedi, più la casa ti entra dentro. Il sonoro — vetro che si assesta, un respiro che non è il tuo — fa il lavoro che altrove farebbero litri di sangue.',
-      'Non è un film per chi cerca lo splatter. È un film per chi vuole portarsi la paura a casa e non riuscire a dormire.',
-    ],
-  },
-  {
-    slug: 'novena',
-    title: 'Novena',
-    originalTitle: 'Novena',
-    category: 'occulto',
-    year: 2025,
-    director: 'Bruno Saldana',
-    cast: ['Irene Valli', 'Paolo Quist'],
-    runtime: 98,
-    country: 'Spagna',
-    genres: ['Occulto', 'Folk horror'],
-    excerpt:
-      'Nove notti, nove preghiere, un paese che ha smesso di pregare per qualcosa di buono.',
-    publishedAt: '2026-06-15',
-    highlight: 'popolare',
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 5, splatter: 6, musiche: 8, trucco: 9, effetti: 8, costumi: 9, finale: 8 },
-    atmo: 'radial-gradient(120% 100% at 65% 30%,#1c1336,#0a0712 72%)',
-    body: [
-      'Folk horror che conosce le sue radici e le tradisce al momento giusto. Saldana gira un paese reale e lo trasforma in liturgia.',
-      'Il trucco e i costumi sono da manuale: ogni volto è una maschera che si crepa lentamente.',
-    ],
-  },
-  {
-    slug: 'tagli',
-    title: 'Tagli',
-    originalTitle: 'Cuts',
-    category: 'splatter',
-    year: 2023,
-    director: 'Gore Maxwell',
-    cast: ['Dana Frost', 'Leo Kane'],
-    runtime: 89,
-    country: 'USA',
-    genres: ['Slasher', 'Splatter'],
-    excerpt: 'Pratico, rumoroso, inzuppato. Lo slasher che non chiede scusa.',
-    publishedAt: '2026-06-12',
-    highlight: null,
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 8, splatter: 10, musiche: 6, trucco: 9, effetti: 9, costumi: 5, finale: 7 },
-    atmo: 'radial-gradient(120% 120% at 60% 45%,#2e0709,#0b0709 70%)',
-    body: [
-      'Effetti pratici, niente CGI, litri di sangue guadagnati con sudore e lattice. Per i puristi del genere è una festa.',
-      'La sceneggiatura è un pretesto, ma chi guarda Tagli per la trama ha sbagliato sala.',
-    ],
-  },
-  {
-    slug: 'occhi-di-pece',
-    title: 'Occhi di Pece',
-    originalTitle: 'Pitch Eyes',
-    category: 'asiatico',
-    year: 2022,
-    director: 'Sora Hagiwara',
-    cast: ['Mei Ito', 'Ken Abe'],
-    runtime: 105,
-    country: 'Giappone',
-    genres: ['Ghost story', 'Soprannaturale'],
-    excerpt: 'Uno spettro che non urla, osserva. Il J-horror torna a far paura piano.',
-    publishedAt: '2026-06-09',
-    highlight: 'importante',
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 7, splatter: 2, musiche: 9, trucco: 7, effetti: 6, costumi: 7, finale: 9 },
-    atmo: 'linear-gradient(150deg,#0a0f15,#1f0c1b 60%,#2a0d12)',
-    body: [
-      'Hagiwara recupera la lezione del J-horror classico: il fantasma è paziente, e la pazienza è la cosa più spaventosa che esista.',
-      'Le musiche — quasi assenti — lasciano spazio a un silenzio che pesa come un corpo.',
-    ],
-  },
-  {
-    slug: 'il-proiezionista',
-    title: 'Il Proiezionista',
-    originalTitle: 'The Projectionist',
-    category: 'classici',
-    year: 1979,
-    director: 'Aldo Ferri',
-    cast: ['Vittorio Sanna', 'Clara De Luca'],
-    runtime: 94,
-    country: 'Italia',
-    genres: ['Giallo', 'Classico'],
-    excerpt: 'Riscoperta di un giallo dimenticato: lame, guanti neri e una sala che non chiude mai.',
-    publishedAt: '2026-06-05',
-    highlight: null,
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 4, splatter: 7, musiche: 10, trucco: 6, effetti: 5, costumi: 8, finale: 8 },
-    atmo: 'linear-gradient(180deg,#15161c,#0a0b10)',
-    body: [
-      'Un giallo all’italiana che il tempo aveva sepolto e che merita la riscoperta. La colonna sonora, ipnotica, è da sola un motivo per recuperarlo.',
-      'Ferri gira la sala cinematografica come un labirinto: ogni corridoio porta a una lama.',
-    ],
-  },
-  {
-    slug: 'turno-di-notte',
-    title: 'Turno di Notte',
-    originalTitle: 'Graveyard Shift',
-    category: 'midnight',
-    year: 2025,
-    director: 'Rae Holloway',
-    cast: ['Nadia Brooks', 'Sam Vidal'],
-    runtime: 101,
-    country: 'USA',
-    genres: ['Midnight', 'Body horror'],
-    excerpt: 'Cinema da mezzanotte allo stato puro: assurdo, viscido, irresistibile.',
-    publishedAt: '2026-06-02',
-    highlight: 'popolare',
-    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    ratings: { jumpscare: 7, splatter: 8, musiche: 7, trucco: 10, effetti: 9, costumi: 6, finale: 8 },
-    atmo: 'radial-gradient(140% 120% at 75% 85%,#190b22,#070710 65%)',
-    body: [
-      'Il film perfetto per le 2 di notte: non si prende sul serio nemmeno per un fotogramma e proprio per questo funziona.',
-      'Il trucco prostetico è fuori scala. Holloway sa esattamente che film sta facendo.',
-    ],
-  },
-];
+const projectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID || '82x61wc7';
+const dataset = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
+
+const client = createClient({
+  projectId,
+  dataset,
+  apiVersion: '2021-10-21',
+  useCdn: false, // build-time fetch: read fresh so a publish->rebuild shows immediately
+});
+
+const DEFAULT_ATMO = 'linear-gradient(180deg,#14151b,#0a0b10)';
+
+// Turn a Sanity poster image URL into a CSS background, sized for the web.
+const posterBg = (url) =>
+  url ? `#0a0b10 url("${url}?w=1400&q=72&auto=format") center/cover no-repeat` : null;
+
+// --- Portable Text -> array of paragraph HTML strings ---------------------
+// Reviews are prose; we keep inline marks (bold/italic/links) and drop block
+// styles (every block becomes a <p>, so the drop-cap CSS still applies).
+const esc = (s) =>
+  String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function bodyToParagraphs(blocks) {
+  if (!Array.isArray(blocks)) return [];
+  return blocks
+    .filter((b) => b && b._type === 'block')
+    .map((block) => {
+      const defs = block.markDefs || [];
+      return (block.children || [])
+        .map((span) => {
+          let t = esc(span.text || '');
+          for (const mark of span.marks || []) {
+            if (mark === 'strong') t = `<strong>${t}</strong>`;
+            else if (mark === 'em') t = `<em>${t}</em>`;
+            else if (mark === 'underline') t = `<u>${t}</u>`;
+            else {
+              const def = defs.find((d) => d._key === mark);
+              if (def && def._type === 'link' && def.href) {
+                t = `<a href="${esc(def.href)}" target="_blank" rel="noopener noreferrer">${t}</a>`;
+              }
+            }
+          }
+          return t;
+        })
+        .join('');
+    })
+    .filter((html) => html.trim().length > 0);
+}
+
+// --- Fetch (build time) ----------------------------------------------------
+const CATEGORY_Q = `*[_type=="category"]|order(order asc){
+  "slug": slug.current, title, tagline, atmo, accent
+}`;
+
+const REVIEW_Q = `*[_type=="review" && defined(slug.current)]|order(publishedAt desc){
+  "slug": slug.current,
+  title, originalTitle, year, director, cast, runtime, country, genres,
+  excerpt, publishedAt, highlight, trailer,
+  "category": category->slug.current,
+  "categoryAtmo": category->atmo,
+  "posterUrl": poster.asset->url,
+  atmo,
+  ratings,
+  body
+}`;
+
+const [rawCategories, rawReviews] = await Promise.all([
+  client.fetch(CATEGORY_Q),
+  client.fetch(REVIEW_Q),
+]);
+
+export const categories = (rawCategories || []).map((c) => ({
+  slug: c.slug,
+  title: c.title,
+  tagline: c.tagline || '',
+  atmo: c.atmo || DEFAULT_ATMO,
+  accent: c.accent || null,
+}));
+
+export const reviews = (rawReviews || []).map((r) => {
+  const ratings = { ...(r.ratings || {}) };
+  // Schema names the final score `votoFinale`; the UI reads `finale`.
+  ratings.finale = ratings.votoFinale ?? ratings.finale ?? 0;
+
+  const atmo = posterBg(r.posterUrl) || r.atmo || r.categoryAtmo || DEFAULT_ATMO;
+
+  return {
+    slug: r.slug,
+    title: r.title,
+    originalTitle: r.originalTitle || r.title,
+    category: r.category || null,
+    year: r.year ?? null,
+    director: r.director || '',
+    cast: r.cast || [],
+    runtime: r.runtime ?? null,
+    country: r.country || '',
+    genres: r.genres || [],
+    excerpt: r.excerpt || '',
+    publishedAt: r.publishedAt || '',
+    highlight: r.highlight || null,
+    trailer: r.trailer || null,
+    ratings,
+    atmo,
+    body: bodyToParagraphs(r.body),
+  };
+});
 
 export const RATING_AXES = [
   { key: 'jumpscare', label: 'Jumpscare' },
@@ -167,5 +134,5 @@ export const RATING_AXES = [
 
 export const getCategory = (slug) => categories.find((c) => c.slug === slug);
 export const reviewsByDate = () =>
-  [...reviews].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  [...reviews].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
 export const featuredReviews = () => reviews.filter((r) => r.highlight);

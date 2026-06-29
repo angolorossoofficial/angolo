@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
 
-// GitHub Pages project site: https://xerocool36.github.io/angolo-rosso/
-// When a custom domain is added later, set site to the domain and base to '/'.
+// Deployed to Netlify at the site root, custom domain angolorosso.com
+// (client-owned). `site` drives absolute URLs (sitemap/canonical).
+// No `base`: the site serves from `/`.
 export default defineConfig({
-  site: 'https://xerocool36.github.io',
-  base: '/angolo-rosso',
+  site: 'https://angolorosso.com',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
 });

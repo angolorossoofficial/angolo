@@ -4,9 +4,10 @@ import Bracket from './Bracket.astro';
 import { featuredReviews, getCategory, RATING_AXES } from '../data/sample.js';
 
 const feat = featuredReviews()[0];
-const cat = getCategory(feat.category);
+const cat = feat ? getCategory(feat.category) : null;
 const labelFor = { consigliata: 'Consigliata', popolare: 'Popolare', importante: 'Imperdibile' };
 ---
+{feat && (
 <section class="evid section">
   <div class="wrap">
     <p class="label evid-eyebrow" data-reveal>In Evidenza</p>
@@ -39,6 +40,7 @@ const labelFor = { consigliata: 'Consigliata', popolare: 'Popolare', importante:
     </article>
   </div>
 </section>
+)}
 
 <style>
   .evid-eyebrow { margin-bottom: 1.4rem; }

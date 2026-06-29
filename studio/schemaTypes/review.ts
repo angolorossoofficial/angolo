@@ -127,10 +127,19 @@ export const review = defineType({
     defineField({
       name: 'poster',
       title: 'Copertina',
+      description:
+        "Facoltativa. Senza copertina la card usa il gradiente qui sotto, o quello della categoria.",
       type: 'image',
       group: 'media',
       options: {hotspot: true},
-      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'atmo',
+      title: 'Atmosfera (sfondo CSS)',
+      description:
+        "Gradiente CSS di riserva usato come sfondo quando manca la copertina. Lascia vuoto per ereditare quello della categoria.",
+      type: 'string',
+      group: 'media',
     }),
     defineField({
       name: 'gallery',
