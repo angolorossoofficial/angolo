@@ -1,0 +1,25 @@
+{
+  "name": "angolo-rosso-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pannello di pubblicazione (Sanity Studio) per Angolo Rosso",
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "import:categories": "sanity dataset import ./seed/categories.ndjson production --replace"
+  },
+  "dependencies": {
+    "@sanity/vision": "^6.2.0",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "sanity": "^6.2.0",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}
