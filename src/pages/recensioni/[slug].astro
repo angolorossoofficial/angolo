@@ -54,9 +54,11 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
         {review.trailer && (
           <section class="rev-trailer" data-reveal aria-label="Trailer">
             <p class="label rev-block-label">Trailer</p>
-            <div class="rev-embed">
-              <iframe src={review.trailer} title={`Trailer — ${review.title}`} loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div class="rev-embed" data-yt-src={review.trailer} data-yt-title={`Trailer — ${review.title}`} style={`background:${review.atmo}`}>
+              <button class="rev-yt" data-yt-load type="button" aria-label="Carica il trailer da YouTube">
+                <span class="rev-yt-play" aria-hidden="true"></span>
+                <span class="rev-yt-txt">Carica il trailer<small>Caricando accetti i cookie di YouTube</small></span>
+              </button>
             </div>
           </section>
         )}
@@ -117,8 +119,31 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
   .rev-shot:hover { transform: scale(1.02); }
 
   .rev-trailer { margin-top: 3rem; }
-  .rev-embed { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #000; }
+  .rev-embed { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #000 center/cover; overflow: hidden; }
   .rev-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .rev-yt {
+    position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+    background: linear-gradient(rgba(7,7,10,.55), rgba(7,7,10,.8));
+    transition: background var(--t-fast);
+  }
+  .rev-yt:hover { background: linear-gradient(rgba(7,7,10,.45), rgba(7,7,10,.72)); }
+  .rev-yt-play {
+    width: 66px; height: 66px; border-radius: 50%; border: 2px solid var(--blood);
+    display: grid; place-items: center; transition: transform var(--t-fast), background var(--t-fast);
+    box-shadow: 0 0 24px -6px var(--blood-deep);
+  }
+  .rev-yt-play::after {
+    content: ''; margin-left: 5px;
+    border-left: 18px solid var(--blood); border-top: 11px solid transparent; border-bottom: 11px solid transparent;
+  }
+  .rev-yt:hover .rev-yt-play { transform: scale(1.08); background: color-mix(in srgb, var(--blood) 18%, transparent); }
+  .rev-yt-txt {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem; text-align: center;
+    font-family: var(--font-ui); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    font-size: 0.8rem; color: var(--bone);
+  }
+  .rev-yt-txt small { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: none; color: var(--ash); font-weight: 500; }
 
   .rev-engage { position: relative; margin-top: 3rem; padding: clamp(1.6rem, 3vw, 2.4rem); background: var(--ink); border: 1px solid var(--line); }
   .rev-engage-frame { inset: 9px !important; }

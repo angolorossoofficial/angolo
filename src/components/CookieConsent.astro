@@ -1,0 +1,90 @@
+---
+import { withBase } from '../lib/url';
+// GDPR/ePrivacy consent: technical cookies load freely; third-party embeds
+// (YouTube trailers) stay BLOCKED until the user consents. Choice persisted in
+// localStorage. Reopen via a [data-cookie-reopen] link (see Footer).
+---
+<div class="cc" data-cookie-banner hidden role="dialog" aria-live="polite" aria-label="Preferenze cookie">
+  <div class="cc-inner wrap">
+    <p class="cc-txt">
+      Usiamo cookie tecnici necessari al funzionamento del sito. Con il tuo consenso
+      carichiamo anche <strong>contenuti di terze parti</strong> (i trailer di YouTube),
+      che installano cookie propri di Google. <a href={withBase('/privacy')}>Maggiori dettagli</a>.
+    </p>
+    <div class="cc-btns">
+      <button class="cc-btn cc-reject" data-cookie-reject type="button">Rifiuta</button>
+      <button class="cc-btn cc-accept" data-cookie-accept type="button">Accetta</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cc {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+    background: color-mix(in srgb, var(--ink) 94%, #000);
+    border-top: 1px solid var(--blood-deep);
+    box-shadow: 0 -18px 50px -20px #000;
+    backdrop-filter: blur(8px);
+  }
+  .cc[hidden] { display: none; }
+  .cc-inner { display: flex; align-items: center; gap: clamp(1rem, 3vw, 2.4rem); padding-block: 1.1rem; flex-wrap: wrap; }
+  .cc-txt { font-size: 0.86rem; line-height: 1.6; color: var(--bone-dim); flex: 1 1 360px; }
+  .cc-txt a { color: var(--blood); text-decoration: underline; text-underline-offset: 2px; }
+  .cc-txt strong { color: var(--bone); }
+  .cc-btns { display: flex; gap: 0.7rem; flex: 0 0 auto; }
+  .cc-btn {
+    font-family: var(--font-ui); font-weight: 700; font-size: 0.72rem;
+    letter-spacing: 0.16em; text-transform: uppercase; padding: 0.7rem 1.3rem;
+    border: 1px solid var(--line); border-radius: 2px; transition: all var(--t-fast);
+  }
+  .cc-reject { color: var(--bone-dim); background: transparent; }
+  .cc-reject:hover { color: var(--bone); border-color: var(--ash); }
+  .cc-accept { color: #fff; background: var(--blood); border-color: var(--blood); }
+  .cc-accept:hover { background: var(--blood-bright); border-color: var(--blood-bright); }
+  @media (max-width: 560px) { .cc-btns { width: 100%; } .cc-btn { flex: 1; } }
+</style>
+
+<script>
+  const KEY = 'ar-consent';
+  const banner = document.querySelector('[data-cookie-banner]') as HTMLElement | null;
+  const show = (v: boolean) => { if (banner) banner.hidden = !v; };
+
+  const makeIframe = (box: Element) => {
+    if (box.querySelector('iframe')) return;
+    const src = box.getAttribute('data-yt-src');
+    if (!src) return;
+    const ifr = document.createElement('iframe');
+    ifr.src = src;
+    ifr.title = box.getAttribute('data-yt-title') || 'Trailer';
+    ifr.loading = 'lazy';
+    ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    ifr.allowFullscreen = true;
+    box.innerHTML = '';
+    box.appendChild(ifr);
+  };
+  const loadAllEmbeds = () => document.querySelectorAll('[data-yt-src]').forEach(makeIframe);
+
+  const setConsent = (v: 'granted' | 'denied') => {
+    try { localStorage.setItem(KEY, v); } catch {}
+    show(false);
+    if (v === 'granted') loadAllEmbeds();
+  };
+
+  let current: string | null = null;
+  try { current = localStorage.getItem(KEY); } catch {}
+  if (!current) show(true);
+  else if (current === 'granted') loadAllEmbeds();
+
+  document.querySelector('[data-cookie-accept]')?.addEventListener('click', () => setConsent('granted'));
+  document.querySelector('[data-cookie-reject]')?.addEventListener('click', () => setConsent('denied'));
+
+  // Explicit per-video opt-in (works even if globally rejected)
+  document.querySelectorAll('[data-yt-load]').forEach((btn) =>
+    btn.addEventListener('click', () => { const box = btn.closest('[data-yt-src]'); if (box) makeIframe(box); })
+  );
+
+  // Reopen the banner from a footer link
+  document.querySelectorAll('[data-cookie-reopen]').forEach((el) =>
+    el.addEventListener('click', (e) => { e.preventDefault(); show(true); })
+  );
+</script>
