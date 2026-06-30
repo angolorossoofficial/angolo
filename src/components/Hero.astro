@@ -4,11 +4,9 @@ import Bracket from './Bracket.astro';
 ---
 <section class="hero">
   <div class="hero-bg" data-hero-bg aria-hidden="true">
-    <div class="hero-windows"></div>
-    <div class="hero-neon"></div>
+    <div class="hero-photo" style={`background-image:url(${withBase('/img/hero-bg.webp')})`}></div>
+    <div class="hero-scrim"></div>
     <div class="hero-glow"></div>
-    <div class="hero-figure"></div>
-    <div class="hero-rain"></div>
   </div>
   <Bracket animate={true} class="hero-frame" />
 
@@ -47,46 +45,22 @@ import Bracket from './Bracket.astro';
   .hero-bg { position: absolute; inset: 0; z-index: 0; background: var(--void); }
   .hero-bg > * { position: absolute; inset: 0; }
 
-  /* window mullions — building grid behind the glass */
-  .hero-windows {
+  /* real brand photo — neon rain on glass (client asset) */
+  .hero-photo { background-color: #07070a; background-position: center; background-size: cover; background-repeat: no-repeat; }
+  /* scrim: darken toward the title (left) + fade into the page (bottom) */
+  .hero-scrim {
     background:
-      repeating-linear-gradient(90deg, transparent 0 19%, rgba(0,0,0,.55) 19% 20%),
-      linear-gradient(180deg, #0b0d18 0%, #0a0a12 45%, #07070a 100%);
-    opacity: .9;
+      linear-gradient(100deg, rgba(7,7,10,.93) 0%, rgba(7,7,10,.66) 38%, rgba(7,7,10,.30) 100%),
+      linear-gradient(180deg, transparent 42%, rgba(7,7,10,.82) 86%, var(--void) 100%);
   }
-  /* blue neon tube streak */
-  .hero-neon {
-    background:
-      radial-gradient(60% 7% at 38% 30%, rgba(80,130,255,.55), transparent 70%),
-      linear-gradient(95deg, transparent 30%, rgba(70,120,255,.35) 38%, rgba(120,170,255,.6) 41%, transparent 52%);
-    filter: blur(1px);
-    mix-blend-mode: screen;
-    opacity: .8;
-  }
-  /* red room glow on the right (the door light) */
+  /* keep a soft red pulse over the photo's existing red glow */
   .hero-glow {
-    background:
-      radial-gradient(46% 70% at 82% 52%, rgba(225,6,0,.55), rgba(120,3,3,.18) 45%, transparent 72%);
+    background: radial-gradient(46% 70% at 82% 52%, rgba(225,6,0,.26), transparent 70%);
     mix-blend-mode: screen;
     animation: pulse 6s var(--ease-in-out) infinite;
   }
-  /* silhouette figure in the red light */
-  .hero-figure {
-    left: auto; right: 14%; top: 30%; bottom: 0; width: min(22vw, 320px);
-    background: radial-gradient(60% 60% at 50% 35%, rgba(0,0,0,.92), transparent 70%);
-    filter: blur(6px);
-    opacity: .9;
-  }
-  /* rain on glass */
-  .hero-rain {
-    background-image:
-      repeating-linear-gradient(101deg, transparent 0 7px, rgba(180,200,255,.05) 7px 8px),
-      repeating-linear-gradient(99deg, transparent 0 13px, rgba(255,255,255,.03) 13px 14px);
-    mix-blend-mode: screen;
-    opacity: .5;
-  }
 
-  @keyframes pulse { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
+  @keyframes pulse { 0%,100% { opacity: .7; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .hero-glow { animation: none; } }
 
   .hero-frame { inset: clamp(14px, 2.4vw, 34px) !important; z-index: 4; }
@@ -129,7 +103,7 @@ import Bracket from './Bracket.astro';
   .hero-scroll svg { width: 12px; height: 28px; animation: bob 1.8s var(--ease-in-out) infinite; }
   @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
   @media (prefers-reduced-motion: reduce) { .hero-scroll svg { animation: none; } }
-  @media (max-width: 720px) { .hero-scroll { display: none; } .hero-figure { right: 4%; width: 40vw; } }
+  @media (max-width: 720px) { .hero-scroll { display: none; } }
 </style>
 
 <script>

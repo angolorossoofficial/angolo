@@ -27,7 +27,7 @@ const labelFor = { consigliata: 'Consigliata', popolare: 'Popolare', importante:
           {RATING_AXES.map((a) => (
             <li>
               <span class="evid-ra-label">{a.label}</span>
-              <span class="evid-bar"><span class="evid-fill" style={`width:${feat.ratings[a.key] * 10}%`}></span></span>
+              <span class="evid-bar"><span class="evid-fill" style={`width:${Math.min(100, feat.ratings[a.key] * 20)}%`}></span></span>
             </li>
           ))}
         </ul>

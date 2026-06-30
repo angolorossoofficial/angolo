@@ -16,7 +16,7 @@ const cat = getCategory(review.category);
 const related = reviews.filter((r) => r.category === review.category && r.slug !== review.slug).slice(0, 3);
 const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
-<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt}>
+<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage}>
   <article class="rev">
     <!-- hero -->
     <header class="rev-hero">
@@ -38,24 +38,28 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
           {review.body.map((p: string) => <p set:html={p} />)}
         </div>
 
-        <!-- gallery -->
-        <section class="rev-gallery" data-reveal aria-label="Galleria">
-          <p class="label rev-block-label">Dal film</p>
-          <div class="rev-gallery-grid">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <span class="rev-shot" style={`background:${review.atmo};filter:hue-rotate(${i * 24}deg) brightness(${0.8 + i * 0.1})`} aria-hidden="true"></span>
-            ))}
-          </div>
-        </section>
+        <!-- gallery (real stills from Sanity; hidden when none) -->
+        {review.gallery.length > 0 && (
+          <section class="rev-gallery" data-reveal aria-label="Galleria">
+            <p class="label rev-block-label">Dal film</p>
+            <div class="rev-gallery-grid">
+              {review.gallery.map((src: string) => (
+                <img class="rev-shot" src={`${src}?w=900&q=72&auto=format`} alt={`${review.title} — immagine dal film`} loading="lazy" />
+              ))}
+            </div>
+          </section>
+        )}
 
         <!-- trailer -->
-        <section class="rev-trailer" data-reveal aria-label="Trailer">
-          <p class="label rev-block-label">Trailer</p>
-          <div class="rev-embed">
-            <iframe src={review.trailer} title={`Trailer — ${review.title}`} loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-          </div>
-        </section>
+        {review.trailer && (
+          <section class="rev-trailer" data-reveal aria-label="Trailer">
+            <p class="label rev-block-label">Trailer</p>
+            <div class="rev-embed">
+              <iframe src={review.trailer} title={`Trailer — ${review.title}`} loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+          </section>
+        )}
 
         <!-- comments / public vote — v2 placeholder -->
         <section class="rev-engage" data-reveal>
@@ -109,7 +113,7 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
   .rev-block-label { margin-bottom: 1.1rem; }
   .rev-gallery { margin-top: 3rem; }
   .rev-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
-  .rev-shot { aspect-ratio: 3 / 2; border: 1px solid var(--line); transition: transform var(--t-fast); }
+  .rev-shot { aspect-ratio: 3 / 2; width: 100%; object-fit: cover; border: 1px solid var(--line); transition: transform var(--t-fast); }
   .rev-shot:hover { transform: scale(1.02); }
 
   .rev-trailer { margin-top: 3rem; }

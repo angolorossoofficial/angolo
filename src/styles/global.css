@@ -22,7 +22,7 @@ body {
   font-family: var(--font-ui);
   font-size: var(--fs-body);
   color: var(--bone);
-  background: var(--void);
+  background: transparent; /* reveals the fixed ambient backdrop (.fx-ambient) */
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -83,6 +83,23 @@ ul { list-style: none; padding: 0; }
   pointer-events: none;
   z-index: 1;
 }
+/* site-wide ambient backdrop — the hero's neon-rain photo, dimmed far down +
+   tinted with brand glows, fixed behind all content. Sits at z-index -1 so
+   text/cards stay fully readable on top. */
+.fx-ambient { z-index: -1; background: var(--void); }
+.fx-ambient::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--ambient-img) center/cover no-repeat;
+  opacity: 0.1; filter: saturate(1.15) blur(1px);
+}
+.fx-ambient::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(85% 55% at 12% 0%, rgba(58,107,255,0.06), transparent 60%),
+    radial-gradient(80% 65% at 100% 35%, rgba(225,6,0,0.08), transparent 62%),
+    linear-gradient(180deg, rgba(7,7,10,0.42), rgba(7,7,10,0.74));
+}
+
 .fx-vignette { background: var(--vignette); mix-blend-mode: multiply; }
 .fx-scanlines {
   background-image: repeating-linear-gradient(
@@ -102,15 +119,18 @@ ul { list-style: none; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .fx-grain { animation: none; } }
 
-/* — scroll-reveal default state (gsap toggles .is-in) — */
-[data-reveal] {
+/* — scroll-reveal (gsap toggles .is-in) —
+   The hidden start-state is gated behind html.js-reveal, which the inline head
+   script adds synchronously (so no flash) and a failsafe timer removes if the
+   reveal module never initialises. Without js-reveal, [data-reveal] is fully
+   visible — so a JS/load failure can never leave content permanently hidden. */
+html.js-reveal [data-reveal] {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out);
   will-change: opacity, transform;
 }
-[data-reveal].is-in { opacity: 1; transform: none; }
-html.no-js [data-reveal] { opacity: 1; transform: none; }
+html.js-reveal [data-reveal].is-in { opacity: 1; transform: none; }
 
 /* skip link */
 .skip {

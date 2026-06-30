@@ -1,0 +1,92 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bracket from '../../components/Bracket.astro';
+import { withBase } from '../../lib/url';
+import { news, newsByDate } from '../../data/sample.js';
+
+export function getStaticPaths() {
+  return news.map((n) => ({ params: { slug: n.slug }, props: { article: n } }));
+}
+
+const { article } = Astro.props;
+const date = article.publishedAt
+  ? new Date(article.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  : '';
+const more = newsByDate().filter((n) => n.slug !== article.slug).slice(0, 2);
+---
+<Base title={`${article.title} — Angolo Rosso`} description={article.excerpt} image={article.shareImage}>
+  <article class="art">
+    <header class="art-hero">
+      <span class="art-atmo" style={`background:${article.atmo}`} aria-hidden="true"></span>
+      <span class="art-grad" aria-hidden="true"></span>
+      <div class="wrap art-hero-in">
+        <p class="art-kicker label">{article.kicker}</p>
+        <h1 class="art-title display">{article.title}</h1>
+        <p class="art-byline label">{date}{article.author ? ` · ${article.author}` : ' · La redazione'}</p>
+      </div>
+    </header>
+
+    <div class="wrap art-wrap">
+      <p class="art-lead" data-reveal>{article.excerpt}</p>
+      <div class="art-body" data-reveal>
+        {article.body.map((p) => <p set:html={p} />)}
+      </div>
+
+      <a href={withBase('/news')} class="art-back label" data-reveal>← Tutte le news</a>
+    </div>
+
+    {more.length > 0 && (
+      <section class="art-more section">
+        <div class="wrap">
+          <p class="label art-more-label" data-reveal>Continua a leggere</p>
+          <div class="art-more-grid">
+            {more.map((n, i) => (
+              <a class="art-more-card" href={withBase(`/news/${n.slug}`)} data-reveal style={`transition-delay:${i * 0.07}s`}>
+                <span class="art-more-atmo" style={`background:${n.atmo}`} aria-hidden="true"></span>
+                <span class="art-more-grad" aria-hidden="true"></span>
+                <div class="art-more-body">
+                  <p class="label art-more-kicker">{n.kicker}</p>
+                  <h3 class="art-more-title display">{n.title}</h3>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </article>
+</Base>
+
+<style>
+  .art-hero { position: relative; min-height: 56vh; display: flex; align-items: flex-end; overflow: hidden; padding-top: 6rem; }
+  .art-atmo { position: absolute; inset: 0; transform: scale(1.05); }
+  .art-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.5) 0%, transparent 28%, rgba(7,7,10,.96) 92%); }
+  .art-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 4rem); }
+  .art-kicker { color: var(--blood); margin-bottom: 1rem; }
+  .art-title { font-size: var(--fs-h1); max-width: 22ch; }
+  .art-byline { margin-top: 1rem; }
+
+  .art-wrap { padding-top: clamp(2.5rem, 5vw, 4rem); }
+  .art-lead {
+    font-family: var(--font-read); font-size: clamp(1.3rem, 2vw, 1.7rem); line-height: 1.5;
+    color: var(--bone); border-left: 3px solid var(--blood); padding-left: 1.4rem; margin-bottom: 2.2rem;
+    max-width: var(--maxw-read);
+  }
+  .art-body { max-width: var(--maxw-read); }
+  .art-body p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  .art-body p:first-of-type:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .art-back { color: var(--blood); display: inline-block; margin-top: 1.5rem; transition: padding-left var(--t-fast); }
+  .art-back:hover { padding-left: 0.3rem; }
+
+  .art-more-label { margin-bottom: 1.2rem; }
+  .art-more-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+  .art-more-card { position: relative; display: block; min-height: 200px; border: 1px solid var(--line); overflow: hidden; transition: transform var(--t-fast), border-color var(--t-fast); }
+  .art-more-card:hover { transform: translateY(-3px); border-color: var(--blood); }
+  .art-more-atmo { position: absolute; inset: 0; }
+  .art-more-grad { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(7,7,10,.92)); }
+  .art-more-body { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.4rem; }
+  .art-more-kicker { color: var(--blood); margin-bottom: 0.5rem; }
+  .art-more-title { font-size: clamp(1.2rem, 2vw, 1.6rem); }
+
+  @media (max-width: 720px) { .art-more-grid { grid-template-columns: 1fr; } }
+</style>

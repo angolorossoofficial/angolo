@@ -1,8 +1,80 @@
 ---
-import PlaceholderPage from '../components/PlaceholderPage.astro';
+import Base from '../layouts/Base.astro';
+import Bracket from '../components/Bracket.astro';
+
+const description =
+  'Contatta Angolo Rosso: per segnalazioni, collaborazioni o per proporre un film horror da recensire. Scrivici via email o su Instagram.';
+
+const channels = [
+  {
+    kind: 'Email',
+    value: 'angolorossoofficial@gmail.com',
+    href: 'mailto:angolorossoofficial@gmail.com',
+    note: 'Per collaborazioni, segnalazioni e proposte.',
+    icon: 'mail',
+  },
+  {
+    kind: 'Instagram',
+    value: '@angolorossoofficial',
+    href: 'https://www.instagram.com/angolorossoofficial',
+    note: 'Scrivici in direct: rispondiamo lì ogni giorno.',
+    icon: 'ig',
+  },
+];
 ---
-<PlaceholderPage
-  kicker="Scrivici"
-  title="Contatti"
-  body="Per segnalazioni, collaborazioni o per proporre un film da recensire. Il modulo di contatto e i recapiti verranno definiti con il cliente."
-/>
+<Base title="Contatti — Angolo Rosso" description={description}>
+  <section class="contact">
+    <header class="wrap contact-head">
+      <p class="label" data-reveal>Scrivici</p>
+      <h1 class="contact-title display" data-reveal style="transition-delay:.06s">Contatti</h1>
+      <p class="contact-lead" data-reveal style="transition-delay:.14s">
+        Per segnalazioni, collaborazioni o per proporre un film da recensire.
+        <br />Ci trovi qui.
+      </p>
+    </header>
+
+    <div class="wrap contact-grid">
+      {channels.map((c, i) => (
+        <a class="contact-card" href={c.href} target={c.icon === 'ig' ? '_blank' : undefined} rel={c.icon === 'ig' ? 'noopener noreferrer' : undefined} data-reveal style={`transition-delay:${0.1 + i * 0.08}s`}>
+          <Bracket class="contact-frame" />
+          <span class="contact-ico" aria-hidden="true">
+            {c.icon === 'mail' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <path d="M3 7l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <rect x="3" y="3" width="18" height="18" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+            )}
+          </span>
+          <p class="label contact-kind">{c.kind}</p>
+          <p class="contact-val">{c.value}</p>
+          <p class="contact-note">{c.note}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact { padding-top: clamp(7rem, 12vw, 11rem); padding-bottom: var(--section-y); position: relative; z-index: 2; }
+  .contact-head { max-width: 60ch; }
+  .contact-title { font-size: var(--fs-hero); margin: 0.8rem 0 1.4rem; }
+  .contact-lead { font-family: var(--font-read); font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 1.5; color: var(--bone-dim); }
+
+  .contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); margin-top: clamp(2.5rem, 5vw, 4rem); }
+  .contact-card { position: relative; background: var(--ink); border: 1px solid var(--line); padding: clamp(1.8rem, 3.4vw, 2.6rem); box-shadow: var(--shadow-card); transition: transform var(--t-fast), border-color var(--t-fast); }
+  .contact-card:hover { transform: translateY(-3px); border-color: var(--blood); }
+  .contact-frame { inset: 9px !important; }
+  .contact-ico { display: grid; place-items: center; width: 48px; height: 48px; color: var(--blood); border: 1px solid var(--line); margin-bottom: 1.4rem; }
+  .contact-ico svg { width: 24px; height: 24px; }
+  .contact-kind { color: var(--ash); margin-bottom: 0.5rem; }
+  .contact-val { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--bone); word-break: break-word; }
+  .contact-note { font-family: var(--font-read); color: var(--bone-dim); margin-top: 0.8rem; line-height: 1.6; }
+
+  @media (max-width: 640px) { .contact-grid { grid-template-columns: 1fr; } }
+</style>

@@ -1,12 +1,13 @@
 import {defineType, defineField} from 'sanity'
 
-// Reusable 0–10 axis used by the redazione score panel.
+// Reusable 0–5 axis (mezze stelle, es. 3.5) used by the redazione star panel.
 const axis = (name: string, title: string) =>
   defineField({
     name,
     title,
+    description: 'Da 0 a 5 (mezze stelle ammesse, es. 3.5)',
     type: 'number',
-    validation: (rule) => rule.min(0).max(10).precision(1),
+    validation: (rule) => rule.min(0).max(5).precision(1),
   })
 
 export const ratings = defineType({

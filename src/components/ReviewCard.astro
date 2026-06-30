@@ -16,7 +16,7 @@ const cat = getCategory(review.category);
     </div>
     <div class="card-body">
       <h3 class="card-title display">{review.title}</h3>
-      <p class="card-meta">{review.year} · {review.director} · {review.runtime}′</p>
+      <p class="card-meta">{[review.year, review.director, review.runtime ? `${review.runtime}′` : null].filter(Boolean).join(' · ')}</p>
       <p class="card-ex">{review.excerpt}</p>
       <span class="card-more label">Leggi la recensione <span aria-hidden="true">→</span></span>
     </div>

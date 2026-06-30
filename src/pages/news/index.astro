@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bracket from '../../components/Bracket.astro';
+import { withBase } from '../../lib/url';
+import { newsByDate } from '../../data/sample.js';
+
+const all = newsByDate();
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+---
+<Base title="News & Approfondimenti — Angolo Rosso" description="News, opinioni e approfondimenti dal mondo del cinema horror e non solo, a cura della redazione di Angolo Rosso.">
+  <section class="news section">
+    <div class="wrap">
+      <header class="news-head" data-reveal>
+        <p class="label">Oltre le recensioni</p>
+        <h1 class="news-title display">News &amp; <span class="red">Approfondimenti</span></h1>
+        <p class="news-intro">Opinioni, notizie e riflessioni dal mondo del cinema horror — e da tutto ciò che gli gira attorno.</p>
+      </header>
+
+      {all.length === 0 ? (
+        <p class="news-empty">Nessun articolo per ora. <span class="red">Torna presto.</span></p>
+      ) : (
+        <div class="news-grid">
+          {all.map((n, i) => (
+            <a class="news-card" href={withBase(`/news/${n.slug}`)} data-reveal style={`transition-delay:${0.05 + i * 0.07}s`}>
+              <span class="news-card-atmo" style={`background:${n.atmo}`} aria-hidden="true"></span>
+              <span class="news-card-grad" aria-hidden="true"></span>
+              <Bracket class="news-card-frame" />
+              <div class="news-card-body">
+                <p class="label news-card-kicker">{n.kicker}</p>
+                <h2 class="news-card-title display">{n.title}</h2>
+                <p class="news-card-ex">{n.excerpt}</p>
+                <p class="news-card-meta label">{fmtDate(n.publishedAt)}{n.author ? ` · ${n.author}` : ''}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .news { padding-top: clamp(7rem, 12vw, 11rem); position: relative; z-index: 2; }
+  .news-head { margin-bottom: clamp(2rem, 4vw, 3rem); max-width: 70ch; }
+  .news-title { font-size: var(--fs-h1); margin: 0.6rem 0 1.2rem; }
+  .news-intro { font-family: var(--font-read); font-size: clamp(1.1rem, 1.8vw, 1.4rem); color: var(--bone-dim); line-height: 1.6; }
+
+  .news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+  .news-card { position: relative; display: block; min-height: 320px; border: 1px solid var(--line); overflow: hidden; box-shadow: var(--shadow-card); transition: transform var(--t-fast), border-color var(--t-fast); }
+  .news-card:hover { transform: translateY(-3px); border-color: var(--blood); }
+  .news-card-atmo { position: absolute; inset: 0; transition: transform var(--t-slow) var(--ease-out); }
+  .news-card:hover .news-card-atmo { transform: scale(1.05); }
+  .news-card-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.35) 0%, rgba(7,7,10,.55) 40%, rgba(7,7,10,.95) 100%); }
+  .news-card-frame { inset: 14px !important; }
+  .news-card-body { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(1.5rem, 3vw, 2.2rem); }
+  .news-card-kicker { color: var(--blood); margin-bottom: 0.8rem; }
+  .news-card-title { font-size: clamp(1.5rem, 2.6vw, 2.2rem); margin-bottom: 0.9rem; }
+  .news-card-ex { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.6; margin-bottom: 1.1rem; }
+  .news-card-meta { color: var(--ash); }
+  .news-empty { font-family: var(--font-read); font-size: 1.2rem; color: var(--bone-dim); padding: 3rem 0; }
+
+  @media (max-width: 720px) { .news-grid { grid-template-columns: 1fr; } }
+</style>

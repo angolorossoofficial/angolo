@@ -4,12 +4,12 @@ const { review } = Astro.props;
 const rows = [
   { k: 'Anno', v: review.year },
   { k: 'Regia', v: review.director },
-  { k: 'Cast', v: review.cast.join(', ') },
-  { k: 'Durata', v: `${review.runtime} min` },
-  { k: 'Genere', v: review.genres.join(' · ') },
+  { k: 'Cast', v: (review.cast || []).join(', ') },
+  { k: 'Durata', v: review.runtime ? `${review.runtime} min` : '' },
+  { k: 'Genere', v: (review.genres || []).join(' · ') },
   { k: 'Paese', v: review.country },
   { k: 'Titolo orig.', v: review.originalTitle },
-];
+].filter((r) => r.v != null && String(r.v).trim() !== '');
 ---
 <div class="st">
   <p class="label st-head">Scheda tecnica</p>

@@ -12,7 +12,8 @@ import { categories } from '../data/sample.js';
       {categories.map((c, i) => (
         <li class="cat" data-reveal style={`transition-delay:${i * 0.06}s`}>
           <a href={withBase(`/categoria/${c.slug}`)} class="cat-link">
-            <span class="cat-atmo" style={`background:${c.atmo}`} aria-hidden="true"></span>
+            <span class="cat-atmo" style={`background:${c.cover}`} aria-hidden="true"></span>
+            <span class="cat-tint" style={`background:${c.tint}`} aria-hidden="true"></span>
             <span class="cat-noise" aria-hidden="true"></span>
             <span class="cat-body">
               <span class="cat-name">{c.title}</span>
@@ -44,6 +45,12 @@ import { categories } from '../data/sample.js';
     transition: transform var(--t-med) var(--ease-out), filter var(--t-med);
     filter: saturate(.9) brightness(.85);
   }
+  /* per-category colour wash over the shared backdrop — keeps each card distinct */
+  .cat-tint {
+    position: absolute; inset: 0; opacity: 0.92;
+    transition: opacity var(--t-med);
+  }
+  .cat-link:hover .cat-tint { opacity: 0.7; }
   .cat-noise {
     position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85));

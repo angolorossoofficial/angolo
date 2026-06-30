@@ -9,11 +9,17 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-interface Props { title?: string; description?: string; }
+interface Props { title?: string; description?: string; image?: string; }
 const {
   title = 'Angolo Rosso — Recensioni di Cinema Horror',
-  description = 'Recensioni di cinema horror con un’anima: splatter, occulto, indipendenti, dark comedy, classici. Quanto vuoi spingerti oltre?',
+  description = 'Recensioni di cinema horror con un’anima: splatter, psicologici, occulto, indipendenti, dark comedy, classici. Quanto vuoi spingerti oltre?',
+  image,
 } = Astro.props;
+
+const site = Astro.site ?? new URL('https://angolorosso.com');
+const canonical = new URL(Astro.url.pathname, site);
+// Per-page share image (review poster / news cover) or the cinematic default.
+const ogImage = new URL(image ?? '/img/hero-bg.webp', site).href;
 ---
 <!doctype html>
 <html lang="it" class="no-js">
@@ -23,11 +29,29 @@ const {
     <meta name="theme-color" content="#07070a" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="icon" href={`${import.meta.env.BASE_URL}/favicon.svg`} type="image/svg+xml" />
-    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+    <meta property="og:site_name" content="Angolo Rosso" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${import.meta.env.BASE_URL}favicon-32.png`} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    <script is:inline>
+      // Hide reveal elements synchronously (no flash). Failsafe forces them
+      // visible if the reveal module never runs — content can't get stuck hidden.
+      document.documentElement.classList.remove('no-js');
+      document.documentElement.classList.add('js-reveal');
+      window.__revealFailsafe = setTimeout(function () {
+        document.querySelectorAll('[data-reveal], .bracket--anim').forEach(function (el) { el.classList.add('is-in'); });
+      }, 2500);
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">Salta al contenuto</a>
@@ -39,6 +63,7 @@ const {
     <Footer />
 
     <!-- atmosphere -->
+    <div class="fx fx-ambient" aria-hidden="true" style={`--ambient-img:url(${import.meta.env.BASE_URL}img/hero-bg.webp)`}></div>
     <div class="fx fx-vignette"></div>
     <div class="fx fx-scanlines"></div>
     <div class="fx fx-grain"></div>
@@ -68,6 +93,8 @@ const {
           onEnter: (els) => els.forEach((el) => el.classList.add('is-in')),
         });
       }
+      // reveal module is alive — cancel the head failsafe
+      clearTimeout(window.__revealFailsafe);
     </script>
   </body>
 </html>

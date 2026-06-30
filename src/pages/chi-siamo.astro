@@ -1,8 +1,73 @@
 ---
-import PlaceholderPage from '../components/PlaceholderPage.astro';
+import Base from '../layouts/Base.astro';
+import Bracket from '../components/Bracket.astro';
+import { withBase } from '../lib/url';
+
+const description =
+  'Angolo Rosso nasce da una coppia di appassionati di cinema horror: recensioni sincere, tra emozione e analisi tecnica, per dare il giusto valore a un genere troppo spesso sottovalutato.';
+
+const paragraphs = [
+  'Da oltre due anni passiamo il nostro tempo libero tra sale cinematografiche, maratone notturne, discussioni infinite sui film appena visti e consigli da dare agli amici.',
+  'Angolo Rosso nasce proprio da questo: dalla voglia di trasformare le nostre chiacchiere post-cinema in uno spazio aperto a tutti gli appassionati. Da una parte c’è la passione per la scrittura e per il cinema, coltivata attraverso un percorso di studi in comunicazione e giornalismo; dall’altra, un amore profondo per il cinema horror, che nel tempo è diventato una passione condivisa.',
+  'Per noi l’horror è molto più di un semplice genere cinematografico. È adrenalina, tensione, stupore, emozioni forti, ma anche riflessione. Amiamo quei film che riescono a lasciarti qualcosa addosso, che continuano a farti pensare anche dopo i titoli di coda e che affrontano temi profondi attraverso storie capaci di colpire davvero.',
+  'Le nostre recensioni nascono dall’unione di due approcci diversi ma complementari: uno più istintivo ed emotivo, l’altro più tecnico e analitico. Vogliamo raccontare ogni film in modo sincero, senza filtri e senza pregiudizi, condividendo sia le emozioni che ci ha trasmesso sia gli aspetti cinematografici che lo rendono unico.',
+  'Con Angolo Rosso vogliamo creare uno spazio dedicato a chi ama il cinema horror in tutte le sue forme, ma soprattutto vogliamo contribuire a dare il giusto valore a un genere troppo spesso sottovalutato, dimostrando che dietro sangue, tensione e paura si nascondono spesso storie, idee ed emozioni molto più profonde di quanto si possa immaginare.',
+];
 ---
-<PlaceholderPage
-  kicker="La redazione"
-  title="Chi siamo"
-  body="Siamo un angolo buio dedicato al cinema horror: splatter, occulto, indipendenti, dark comedy, classici. Questa pagina racconterà la voce dietro le recensioni — testo in arrivo."
-/>
+<Base title="Chi siamo — Angolo Rosso" description={description}>
+  <section class="about">
+    <header class="wrap about-head">
+      <p class="label" data-reveal>La redazione</p>
+      <h1 class="about-title display" data-reveal style="transition-delay:.06s">Chi <span class="red">siamo</span></h1>
+      <p class="about-lead" data-reveal style="transition-delay:.14s">
+        Siamo una coppia che condivide una grande passione: il <span class="red">cinema horror</span>.
+      </p>
+    </header>
+
+    <div class="wrap about-body">
+      <div class="about-prose" data-reveal>
+        {paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+
+      <aside class="about-card" data-reveal>
+        <Bracket class="about-frame" />
+        <p class="label">Due voci, un angolo</p>
+        <p class="about-card-body">
+          Una più istintiva ed emotiva, l’altra più tecnica e analitica.
+          Insieme, ogni film raccontato senza filtri.
+        </p>
+        <a href={withBase('/recensioni')} class="about-cta label">Leggi le recensioni →</a>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about { padding-top: clamp(7rem, 12vw, 11rem); padding-bottom: var(--section-y); position: relative; z-index: 2; }
+  .about-head { max-width: 60ch; }
+  .about-title { font-size: var(--fs-hero); margin: 0.8rem 0 1.6rem; }
+  .about-lead {
+    font-family: var(--font-read); font-size: clamp(1.4rem, 2.4vw, 2rem); line-height: 1.4;
+    color: var(--bone); border-left: 3px solid var(--blood); padding-left: 1.4rem;
+  }
+
+  .about-body {
+    display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: clamp(2rem, 5vw, 4.5rem);
+    margin-top: clamp(2.5rem, 5vw, 4rem); align-items: start;
+  }
+  .about-prose { max-width: var(--maxw-read); }
+  .about-prose p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  .about-prose p:first-of-type:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+
+  .about-card { position: relative; background: var(--ink); border: 1px solid var(--line); padding: clamp(1.6rem, 3vw, 2.2rem); box-shadow: var(--shadow-card); position: sticky; top: 6rem; }
+  .about-frame { inset: 9px !important; }
+  .about-card .label { color: var(--bone-dim); margin-bottom: 1rem; }
+  .about-card-body { font-family: var(--font-read); color: var(--bone); line-height: 1.7; margin-bottom: 1.4rem; }
+  .about-cta { color: var(--blood); transition: padding-left var(--t-fast); display: inline-block; }
+  .about-cta:hover { padding-left: 0.3rem; }
+
+  @media (max-width: 860px) {
+    .about-body { grid-template-columns: 1fr; }
+    .about-card { position: static; }
+  }
+</style>

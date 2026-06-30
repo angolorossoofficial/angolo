@@ -14,7 +14,8 @@ const list = reviewsByDate().filter((r) => r.category === category.slug);
 ---
 <Base title={`${category.title} — Angolo Rosso`} description={`Recensioni horror della categoria ${category.title}. ${category.tagline}.`}>
   <section class="cat-hero">
-    <span class="cat-hero-atmo" style={`background:${category.atmo}`} aria-hidden="true"></span>
+    <span class="cat-hero-atmo" style={`background:${category.cover}`} aria-hidden="true"></span>
+    <span class="cat-hero-tint" style={`background:${category.tint}`} aria-hidden="true"></span>
     <span class="cat-hero-grad" aria-hidden="true"></span>
     <Bracket animate={true} class="cat-hero-frame" />
     <div class="wrap cat-hero-in">
@@ -41,6 +42,7 @@ const list = reviewsByDate().filter((r) => r.category === category.slug);
 <style>
   .cat-hero { position: relative; min-height: 52vh; display: flex; align-items: flex-end; overflow: hidden; padding-top: 6rem; }
   .cat-hero-atmo { position: absolute; inset: 0; transform: scale(1.05); }
+  .cat-hero-tint { position: absolute; inset: 0; opacity: 0.9; transform: scale(1.05); }
   .cat-hero-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.55), transparent 35%, rgba(7,7,10,.95)); }
   .cat-hero-frame { inset: clamp(14px,2vw,30px) !important; }
   .cat-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 3.5rem); }

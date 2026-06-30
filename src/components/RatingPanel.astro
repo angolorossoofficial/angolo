@@ -3,6 +3,7 @@ import Bracket from './Bracket.astro';
 import { RATING_AXES } from '../data/sample.js';
 interface Props { ratings: Record<string, number>; }
 const { ratings } = Astro.props;
+const fmt = (n: number) => (Number.isInteger(n) ? String(n) : String(n).replace('.', ','));
 ---
 <div class="rp">
   <Bracket class="rp-frame" />
@@ -10,18 +11,15 @@ const { ratings } = Astro.props;
 
   <ul class="rp-axes">
     {RATING_AXES.map((a) => {
-      const v = ratings[a.key] ?? 0;
+      const v = Math.max(0, Math.min(5, ratings[a.key] ?? 0));
       return (
         <li class="rp-axis">
-          <div class="rp-axis-top">
-            <span class="rp-axis-label">{a.label}</span>
-            <span class="rp-axis-val">{v}</span>
-          </div>
-          <span class="rp-skulls" role="img" aria-label={`${a.label}: ${v} su 10`}>
-            {Array.from({ length: 10 }).map((_, i) => (
-              <span class:list={['rp-skull', { on: i < v }]} aria-hidden="true"></span>
-            ))}
+          <span class="rp-axis-label">{a.label}</span>
+          <span class="rp-stars" role="img" aria-label={`${a.label}: ${fmt(v)} su 5`} style={`--fill:${(v / 5) * 100}%`}>
+            <span class="rp-stars-row rp-stars-base" aria-hidden="true">★★★★★</span>
+            <span class="rp-stars-row rp-stars-fill" aria-hidden="true">★★★★★</span>
           </span>
+          <span class="rp-axis-val">{fmt(v)}</span>
         </li>
       );
     })}
@@ -29,7 +27,7 @@ const { ratings } = Astro.props;
 
   <div class="rp-final">
     <span class="label">Voto finale</span>
-    <span class="rp-final-num"><b>{ratings.finale}</b><small>/10</small></span>
+    <span class="rp-final-num"><b>{fmt(ratings.finale)}</b><small>/10</small></span>
   </div>
 </div>
 
@@ -37,13 +35,20 @@ const { ratings } = Astro.props;
   .rp { position: relative; background: var(--ink); border: 1px solid var(--line); padding: 1.5rem 1.4rem 1.4rem; box-shadow: var(--shadow-card); }
   .rp-frame { inset: 9px !important; }
   .rp-head { margin-bottom: 1.3rem; color: var(--bone-dim); }
-  .rp-axes { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.4rem; }
-  .rp-axis-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.4rem; }
+  .rp-axes { display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 1.4rem; }
+  .rp-axis { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 0.7rem; }
   .rp-axis-label { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bone); font-weight: 600; }
-  .rp-axis-val { font-family: var(--font-display); font-size: 1rem; color: var(--ash); }
-  .rp-skulls { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
-  .rp-skull { height: 8px; background: var(--ink-2); border: 1px solid var(--line); transition: background var(--t-fast); }
-  .rp-skull.on { background: linear-gradient(180deg, var(--blood-bright), var(--blood-deep)); border-color: var(--blood); box-shadow: 0 0 6px -1px var(--blood-deep); }
+
+  /* fractional star meter (supports halves) */
+  .rp-stars { position: relative; display: inline-block; white-space: nowrap; }
+  .rp-stars-row { font-size: 1rem; letter-spacing: 2px; line-height: 1; }
+  .rp-stars-base { color: var(--ink-2); -webkit-text-stroke: 0.6px var(--line); }
+  .rp-stars-fill {
+    position: absolute; inset: 0; width: var(--fill); overflow: hidden;
+    color: var(--blood-bright); text-shadow: 0 0 8px var(--blood-deep);
+  }
+
+  .rp-axis-val { font-family: var(--font-display); font-size: 0.95rem; color: var(--ash); min-width: 1.6ch; text-align: right; }
 
   .rp-final { display: flex; align-items: center; justify-content: space-between; padding-top: 1.2rem; border-top: 1px solid var(--line); }
   .rp-final .label { color: var(--bone); }

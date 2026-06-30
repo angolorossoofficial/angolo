@@ -5,6 +5,7 @@ import { categories } from '../data/sample.js';
 const nav = [
   { label: 'Home', href: withBase('/') },
   { label: 'Archivio', href: withBase('/recensioni') },
+  { label: 'News', href: withBase('/news') },
 ];
 ---
 <header class="hd" data-header>
@@ -14,12 +15,7 @@ const nav = [
     </button>
 
     <a class="logo" href={withBase('/')} aria-label="Angolo Rosso — home">
-      <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M24 5 L43 39 H5 Z" fill="none" stroke="var(--blood)" stroke-width="2.4" stroke-linejoin="round"/>
-        <circle cx="24" cy="29" r="6.5" fill="none" stroke="var(--blood)" stroke-width="2.4"/>
-        <circle cx="24" cy="29" r="1.8" fill="var(--blood)"/>
-        <line x1="24" y1="12" x2="24" y2="20" stroke="var(--blood)" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
+      <img class="logo-mark" src={withBase('/img/logo-mark.png')} alt="" width="42" height="38" />
       <span class="logo-text">
         <span class="logo-name">Angolo <span class="red">Rosso</span></span>
         <span class="logo-sub">Recensioni di Cinema Horror</span>
@@ -100,7 +96,7 @@ const nav = [
   .hd-menu:hover span:nth-child(2) { transform: scaleX(0.6); transform-origin: left; }
 
   .logo { display: flex; align-items: center; gap: 0.7rem; justify-self: center; }
-  .logo-mark { width: 38px; height: 38px; filter: drop-shadow(0 0 8px var(--blood-deep)); }
+  .logo-mark { width: auto; height: 38px; filter: drop-shadow(0 0 9px var(--blood-deep)); }
   .logo-text { display: flex; flex-direction: column; line-height: 1; }
   .logo-name {
     font-family: var(--font-display); text-transform: uppercase;
@@ -168,11 +164,13 @@ const nav = [
   const menu = document.querySelector('[data-menu]');
   const srch = document.querySelector('[data-search]');
 
+  const menuBtn = document.querySelector('[data-menu-open]');
   const setOpen = (el: Element | null, open: boolean) => {
     if (!el) return;
     el.classList.toggle('is-open', open);
     el.setAttribute('aria-hidden', String(!open));
     root.style.overflow = open ? 'hidden' : '';
+    if (el === menu) menuBtn?.setAttribute('aria-expanded', String(open));
     if (open && el === srch) (el.querySelector('input') as HTMLInputElement | null)?.focus();
   };
 

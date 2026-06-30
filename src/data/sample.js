@@ -67,7 +67,8 @@ function bodyToParagraphs(blocks) {
 
 // --- Fetch (build time) ----------------------------------------------------
 const CATEGORY_Q = `*[_type=="category"]|order(order asc){
-  "slug": slug.current, title, tagline, atmo, accent
+  "slug": slug.current, title, tagline, atmo, accent,
+  "coverUrl": cover.asset->url
 }`;
 
 const REVIEW_Q = `*[_type=="review" && defined(slug.current)]|order(publishedAt desc){
@@ -77,21 +78,54 @@ const REVIEW_Q = `*[_type=="review" && defined(slug.current)]|order(publishedAt 
   "category": category->slug.current,
   "categoryAtmo": category->atmo,
   "posterUrl": poster.asset->url,
+  "galleryUrls": gallery[].asset->url,
   atmo,
   ratings,
   body
 }`;
 
-const [rawCategories, rawReviews] = await Promise.all([
+const NEWS_Q = `*[_type=="news" && defined(slug.current)]|order(publishedAt desc){
+  "slug": slug.current,
+  title, kicker, author, excerpt, publishedAt,
+  "coverUrl": cover.asset->url,
+  atmo,
+  body
+}`;
+
+const [rawCategories, rawReviews, rawNews] = await Promise.all([
   client.fetch(CATEGORY_Q),
   client.fetch(REVIEW_Q),
+  client.fetch(NEWS_Q),
 ]);
+
+// Brand atmospheric backdrop used as the category cover when no dedicated cover
+// image is uploaded in Sanity. NOT a film poster — it's the site's neon-rain art.
+// BASE_URL keeps the path correct under a GitHub Pages sub-path deploy too.
+const BRAND_COVER = `#07070a url("${import.meta.env.BASE_URL}img/hero-bg.webp") center/cover no-repeat`;
+
+const hexToRgba = (hex, a) => {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex || ''));
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+};
+// Per-category colour wash (from the category accent) layered over the shared
+// backdrop, so each card reads as a distinct colour without using film posters.
+const accentWash = (accent) => {
+  const strong = hexToRgba(accent, 0.78) || 'rgba(225,6,0,0.7)';
+  const mid = hexToRgba(accent, 0.34) || 'rgba(225,6,0,0.3)';
+  return `linear-gradient(150deg, ${strong} 0%, ${mid} 48%, transparent 82%)`;
+};
 
 export const categories = (rawCategories || []).map((c) => ({
   slug: c.slug,
   title: c.title,
   tagline: c.tagline || '',
   atmo: c.atmo || DEFAULT_ATMO,
+  // cover resolves in order: uploaded Sanity cover -> brand atmospheric backdrop.
+  cover: posterBg(c.coverUrl) || BRAND_COVER,
+  // accent-coloured wash layered over the cover in the UI to keep cards distinct.
+  tint: accentWash(c.accent),
   accent: c.accent || null,
 }));
 
@@ -119,9 +153,28 @@ export const reviews = (rawReviews || []).map((r) => {
     trailer: r.trailer || null,
     ratings,
     atmo,
+    shareImage: r.posterUrl || null,
+    gallery: (r.galleryUrls || []).filter(Boolean),
     body: bodyToParagraphs(r.body),
   };
 });
+
+const DEFAULT_NEWS_ATMO = 'linear-gradient(160deg,#1c0a0a,#120a0c 55%,#0a0709)';
+
+export const news = (rawNews || []).map((n) => ({
+  slug: n.slug,
+  title: n.title,
+  kicker: n.kicker || 'Approfondimento',
+  author: n.author || '',
+  excerpt: n.excerpt || '',
+  publishedAt: n.publishedAt || '',
+  atmo: posterBg(n.coverUrl) || n.atmo || DEFAULT_NEWS_ATMO,
+  shareImage: n.coverUrl || null,
+  body: bodyToParagraphs(n.body),
+}));
+
+export const newsByDate = () =>
+  [...news].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
 
 export const RATING_AXES = [
   { key: 'jumpscare', label: 'Jumpscare' },
