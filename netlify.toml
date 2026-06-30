@@ -1,0 +1,11 @@
+# Angolo Rosso — Netlify build config (git-linked deploy, client-owned site).
+# Connect this repo in Netlify; a Sanity webhook -> Netlify build hook rebuilds
+# the site whenever the redazione publishes in the Studio.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA-style 404 handled by Astro's static 404 page; no redirects needed.
