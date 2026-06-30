@@ -15,6 +15,11 @@ const { review } = Astro.props;
 const cat = getCategory(review.category);
 const related = reviews.filter((r) => r.category === review.category && r.slug !== review.slug).slice(0, 3);
 const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+// Public read config for the client-side engagement widget (comments + votes).
+// Dataset is public-read, so no token is exposed in the browser.
+const sanityProject = import.meta.env.PUBLIC_SANITY_PROJECT_ID || '82x61wc7';
+const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
 ---
 <Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage}>
   <article class="rev">
@@ -63,11 +68,63 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
           </section>
         )}
 
-        <!-- comments / public vote — v2 placeholder -->
-        <section class="rev-engage" data-reveal>
+        <!-- comments / public vote -->
+        <section
+          class="rev-engage"
+          data-reveal
+          data-engage
+          data-slug={review.slug}
+          data-title={review.title}
+          data-sanity-project={sanityProject}
+          data-sanity-dataset={sanityDataset}
+        >
           <Bracket class="rev-engage-frame" />
-          <p class="label">Commenti &amp; voto del pubblico</p>
-          <p class="rev-engage-soon">In arrivo — qui i lettori potranno commentare e dare il loro voto, da confrontare con quello della redazione.</p>
+
+          <!-- public vote -->
+          <div class="eng-vote">
+            <p class="label">Voto del pubblico</p>
+            <div class="eng-scores">
+              <span class="eng-score eng-score--red">
+                <b>{review.ratings.finale}</b><small>Redazione</small>
+              </span>
+              <span class="eng-score eng-score--pub">
+                <b data-pub-avg>—</b><small data-pub-count>Nessun voto</small>
+              </span>
+            </div>
+
+            <form class="eng-voteform" data-voteform hidden>
+              <label class="eng-voterow">
+                <span>Il tuo voto: <b data-vote-out>5</b>/10</span>
+                <input type="range" min="0" max="10" step="1" value="5" data-vote-input aria-label="Il tuo voto da 0 a 10" />
+              </label>
+              <button type="submit" class="eng-btn" data-vote-submit>Vota</button>
+            </form>
+            <p class="eng-voted" data-voted hidden>Hai votato <b data-voted-val></b>/10. Grazie!</p>
+            <p class="eng-msg" data-vote-msg hidden></p>
+          </div>
+
+          <!-- comments -->
+          <div class="eng-comments">
+            <p class="label">Commenti</p>
+            <ul class="eng-list" data-comments>
+              <li class="eng-empty" data-comments-empty>Ancora nessun commento. Scrivi il primo.</li>
+            </ul>
+
+            <form class="eng-form" data-commentform novalidate>
+              <div class="eng-fields">
+                <input class="eng-in" name="name" type="text" placeholder="Nome" maxlength="60" required autocomplete="name" />
+                <input class="eng-in" name="email" type="email" placeholder="Email (non pubblicata)" maxlength="120" required autocomplete="email" />
+              </div>
+              <textarea class="eng-in eng-ta" name="message" placeholder="Il tuo commento…" maxlength="2000" rows="3" required></textarea>
+              <!-- honeypot: hidden from humans; bots fill it and get silently dropped -->
+              <input class="eng-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <div class="eng-formfoot">
+                <p class="eng-note">L’email non viene pubblicata. Il commento appare dopo l’approvazione della redazione.</p>
+                <button type="submit" class="eng-btn" data-comment-submit>Invia</button>
+              </div>
+              <p class="eng-msg" data-form-msg hidden></p>
+            </form>
+          </div>
         </section>
       </div>
 
@@ -146,8 +203,66 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
   .rev-yt-txt small { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: none; color: var(--ash); font-weight: 500; }
 
   .rev-engage { position: relative; margin-top: 3rem; padding: clamp(1.6rem, 3vw, 2.4rem); background: var(--ink); border: 1px solid var(--line); }
-  .rev-engage-frame { inset: 9px !important; }
-  .rev-engage-soon { font-family: var(--font-read); color: var(--bone-dim); margin-top: 0.8rem; max-width: 54ch; line-height: 1.6; }
+  .rev-engage-frame { inset: 9px !important; z-index: 0; }
+  .rev-engage > *:not(.rev-engage-frame) { position: relative; z-index: 1; }
+
+  /* --- public vote --- */
+  .eng-vote { margin-bottom: 2.2rem; }
+  .eng-scores { display: flex; gap: var(--gap); margin-top: 1.1rem; }
+  .eng-score {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    padding: 1rem 0.6rem; border: 1px solid var(--line); background: var(--void-2);
+  }
+  .eng-score b { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 2.6rem); line-height: 1; }
+  .eng-score small { font: 600 0.64rem/1 var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+  .eng-score--red b { color: var(--blood); }
+  .eng-score--pub b { color: var(--bone); }
+
+  .eng-voteform { margin-top: 1.3rem; display: flex; flex-direction: column; gap: 0.9rem; max-width: 420px; }
+  .eng-voterow { display: flex; flex-direction: column; gap: 0.5rem; font: 600 0.82rem var(--font-ui); letter-spacing: 0.03em; color: var(--bone-dim); }
+  .eng-voterow b { color: var(--blood); }
+  .eng-voteform input[type='range'] { accent-color: var(--blood); width: 100%; }
+  .eng-voted { margin-top: 1rem; font-family: var(--font-read); color: var(--bone-dim); }
+  .eng-voted b { color: var(--blood); }
+
+  .eng-btn {
+    align-self: flex-start; cursor: pointer;
+    font: 700 0.74rem var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
+    color: #fff; background: var(--blood); border: 1px solid var(--blood);
+    padding: 0.7rem 1.5rem; border-radius: 2px; transition: all var(--t-fast);
+  }
+  .eng-btn:hover { background: var(--blood-bright); border-color: var(--blood-bright); }
+  .eng-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* --- comments --- */
+  .eng-comments { border-top: 1px solid var(--line); padding-top: 1.8rem; }
+  .eng-list { list-style: none; display: flex; flex-direction: column; gap: 1.3rem; margin: 1.2rem 0 2rem; padding: 0; }
+  .eng-empty { color: var(--ash); font-family: var(--font-read); font-style: italic; }
+  .eng-c { border-left: 2px solid var(--blood-deep); padding-left: 1rem; }
+  .eng-c-head { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+  .eng-c-name { font: 700 0.92rem var(--font-ui); color: var(--bone); }
+  .eng-c-date { font: 500 0.72rem var(--font-ui); letter-spacing: 0.04em; color: var(--ash); }
+  .eng-c-msg { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; }
+
+  .eng-form { display: flex; flex-direction: column; gap: 0.8rem; }
+  .eng-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .eng-in {
+    width: 100%; background: var(--void-2); border: 1px solid var(--line); color: var(--bone);
+    font: 400 0.95rem var(--font-read); padding: 0.7rem 0.9rem; border-radius: 2px;
+    transition: border-color var(--t-fast);
+  }
+  .eng-in::placeholder { color: var(--ash); }
+  .eng-in:focus { outline: none; border-color: var(--blood); }
+  .eng-ta { resize: vertical; min-height: 92px; }
+  .eng-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .eng-formfoot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .eng-note { font: 500 0.72rem/1.5 var(--font-ui); color: var(--ash); max-width: 44ch; }
+  .eng-msg { font-family: var(--font-read); color: var(--bone-dim); margin-top: 0.5rem; }
+  .eng-msg.is-error { color: var(--blood-bright); }
+  @media (max-width: 560px) {
+    .eng-scores { flex-direction: column; }
+    .eng-fields { grid-template-columns: 1fr; }
+  }
 
   .rev-side-sticky { position: sticky; top: 6rem; display: flex; flex-direction: column; gap: var(--gap); }
 
@@ -164,3 +279,177 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
     .rev-related-grid { grid-template-columns: 1fr; }
   }
 </style>
+
+<script>
+  // Public engagement: live comments + public vote. Reads come straight from
+  // Sanity's public (no-token) query API client-side; writes go through the
+  // Netlify Functions (/api/comment, /api/vote) which hold the write token.
+  const sec = document.querySelector('[data-engage]') as HTMLElement | null;
+  if (sec) {
+    const project = sec.dataset.sanityProject!;
+    const dataset = sec.dataset.sanityDataset!;
+    const slug = sec.dataset.slug!;
+    const title = sec.dataset.title || '';
+    const $ = (s: string) => sec.querySelector(s) as HTMLElement | null;
+
+    const dateFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // --- live data from Sanity (public read) ---------------------------------
+    const QUERY =
+      '{' +
+      '"comments":*[_type=="comment"&&reviewSlug==$slug&&approved==true]|order(createdAt asc){name,message,createdAt},' +
+      '"voteAvg":math::avg(*[_type=="vote"&&reviewSlug==$slug].value),' +
+      '"voteCount":count(*[_type=="vote"&&reviewSlug==$slug])' +
+      '}';
+
+    async function load() {
+      const url =
+        `https://${project}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}` +
+        `?query=${encodeURIComponent(QUERY)}&%24slug=${encodeURIComponent(JSON.stringify(slug))}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('read ' + res.status);
+      const { result } = await res.json();
+      renderVotes(result?.voteAvg, result?.voteCount || 0);
+      renderComments(result?.comments || []);
+    }
+
+    function renderVotes(avg: number | null, count: number) {
+      const avgEl = $('[data-pub-avg]');
+      const cntEl = $('[data-pub-count]');
+      if (!avgEl || !cntEl) return;
+      if (!count || avg == null) {
+        avgEl.textContent = '—';
+        cntEl.textContent = 'Nessun voto';
+        return;
+      }
+      avgEl.textContent = avg.toFixed(1).replace('.', ',');
+      cntEl.textContent = count === 1 ? '1 voto' : `${count} voti`;
+    }
+
+    function renderComments(list: Array<{ name?: string; message?: string; createdAt?: string }>) {
+      const ul = $('[data-comments]');
+      const empty = sec!.querySelector('[data-comments-empty]') as HTMLElement | null;
+      if (!ul) return;
+      ul.querySelectorAll('.eng-c').forEach((n) => n.remove());
+      if (!list.length) {
+        if (empty) empty.hidden = false;
+        return;
+      }
+      if (empty) empty.hidden = true;
+      for (const c of list) {
+        const li = document.createElement('li');
+        li.className = 'eng-c';
+        const head = document.createElement('div');
+        head.className = 'eng-c-head';
+        const nm = document.createElement('span');
+        nm.className = 'eng-c-name';
+        nm.textContent = c.name || 'Anonimo'; // textContent = XSS-safe
+        head.appendChild(nm);
+        if (c.createdAt) {
+          const t = document.createElement('time');
+          t.className = 'eng-c-date';
+          t.dateTime = c.createdAt;
+          t.textContent = dateFmt.format(new Date(c.createdAt));
+          head.appendChild(t);
+        }
+        const msg = document.createElement('p');
+        msg.className = 'eng-c-msg';
+        msg.textContent = c.message || '';
+        li.append(head, msg);
+        ul.appendChild(li);
+      }
+    }
+
+    // --- public vote ---------------------------------------------------------
+    const VKEY = `ar-voted-${slug}`;
+    const voteForm = $('[data-voteform]') as HTMLFormElement | null;
+    const votedMsg = $('[data-voted]');
+    const voteInput = $('[data-vote-input]') as HTMLInputElement | null;
+    const voteOut = $('[data-vote-out]');
+    const voteMsg = $('[data-vote-msg]');
+
+    const showVoted = (v: string) => {
+      if (voteForm) voteForm.hidden = true;
+      if (votedMsg) votedMsg.hidden = false;
+      const valEl = $('[data-voted-val]');
+      if (valEl) valEl.textContent = v;
+    };
+
+    let prior: string | null = null;
+    try { prior = localStorage.getItem(VKEY); } catch {}
+    if (prior !== null) showVoted(prior);
+    else if (voteForm) voteForm.hidden = false;
+
+    voteInput?.addEventListener('input', () => { if (voteOut) voteOut.textContent = voteInput.value; });
+
+    voteForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!voteInput) return;
+      const value = Number(voteInput.value);
+      const btn = $('[data-vote-submit]') as HTMLButtonElement | null;
+      if (btn) btn.disabled = true;
+      if (voteMsg) voteMsg.hidden = true;
+      try {
+        const res = await fetch('/api/vote', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ value, reviewSlug: slug, reviewTitle: title }),
+        });
+        if (!res.ok) throw new Error('vote ' + res.status);
+        try { localStorage.setItem(VKEY, String(value)); } catch {}
+        showVoted(String(value));
+        load().catch(() => {}); // refresh tally (CDN may lag a few seconds)
+      } catch {
+        if (btn) btn.disabled = false;
+        if (voteMsg) { voteMsg.textContent = 'Voto non riuscito, riprova.'; voteMsg.hidden = false; voteMsg.classList.add('is-error'); }
+      }
+    });
+
+    // --- comment form --------------------------------------------------------
+    const cForm = $('[data-commentform]') as HTMLFormElement | null;
+    const cMsg = $('[data-form-msg]');
+    const setMsg = (text: string, error = false) => {
+      if (!cMsg) return;
+      cMsg.textContent = text;
+      cMsg.hidden = !text;
+      cMsg.classList.toggle('is-error', error);
+    };
+
+    cForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('[data-comment-submit]') as HTMLButtonElement | null;
+      const fd = new FormData(cForm);
+      const name = String(fd.get('name') || '').trim();
+      const email = String(fd.get('email') || '').trim();
+      const message = String(fd.get('message') || '').trim();
+      if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || message.length < 3) {
+        setMsg('Controlla nome, email e commento.', true);
+        return;
+      }
+      if (btn) btn.disabled = true;
+      setMsg('');
+      try {
+        const res = await fetch('/api/comment', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name, email, message,
+            website: fd.get('website') || '',
+            reviewSlug: slug, reviewTitle: title,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || 'fail');
+        cForm.reset();
+        setMsg('Grazie! Il commento è in moderazione e apparirà dopo l’approvazione della redazione.');
+      } catch {
+        setMsg('Invio non riuscito. Riprova tra poco.', true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    // initial load (read failures degrade gracefully: form still works)
+    load().catch((err) => console.warn('engage read failed', err?.message || err));
+  }
+</script>
