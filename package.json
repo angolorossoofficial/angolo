@@ -17,5 +17,8 @@
     "astro": "^5.2.0",
     "gsap": "^3.12.5",
     "lenis": "^1.1.18"
+  },
+  "devDependencies": {
+    "@astrojs/sitemap": "^3.7.3"
   }
 }

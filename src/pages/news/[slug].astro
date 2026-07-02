@@ -29,7 +29,11 @@ const more = newsByDate().filter((n) => n.slug !== article.slug).slice(0, 2);
     <div class="wrap art-wrap">
       <p class="art-lead" data-reveal>{article.excerpt}</p>
       <div class="art-body" data-reveal>
-        {article.body.map((p) => <p set:html={p} />)}
+        {article.body.map((b: { style: string; html: string }) =>
+          b.style && b.style !== 'normal'
+            ? <h3 class="art-q" set:html={b.html} />
+            : <p set:html={b.html} />
+        )}
       </div>
 
       <a href={withBase('/news')} class="art-back label" data-reveal>← Tutte le news</a>
@@ -73,8 +77,15 @@ const more = newsByDate().filter((n) => n.slug !== article.slug).slice(0, 2);
     max-width: var(--maxw-read);
   }
   .art-body { max-width: var(--maxw-read); }
-  .art-body p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
-  .art-body p:first-of-type:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .art-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  .art-body p:first-of-type::first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .art-body :global(strong) { color: var(--bone); font-weight: 700; }
+  .art-q {
+    font-family: var(--font-read); font-weight: 700; color: var(--bone);
+    font-size: clamp(1.28rem, 1.7vw, 1.55rem); line-height: 1.35;
+    margin: 2.6rem 0 0.7rem;
+  }
+  .art-q:first-child { margin-top: 0; }
   .art-back { color: var(--blood); display: inline-block; margin-top: 1.5rem; transition: padding-left var(--t-fast); }
   .art-back:hover { padding-left: 0.3rem; }
 

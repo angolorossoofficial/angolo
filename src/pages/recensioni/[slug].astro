@@ -20,8 +20,27 @@ const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'nu
 // Dataset is public-read, so no token is exposed in the browser.
 const sanityProject = import.meta.env.PUBLIC_SANITY_PROJECT_ID || '82x61wc7';
 const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
+
+// Review structured data -> Google can show the redazione's score as a
+// ★ rich result on "recensione <film>" queries.
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'Review',
+  itemReviewed: {
+    '@type': 'Movie',
+    name: review.title,
+    ...(review.originalTitle && review.originalTitle !== review.title ? { alternateName: review.originalTitle } : {}),
+    ...(review.director ? { director: { '@type': 'Person', name: review.director } } : {}),
+  },
+  reviewRating: { '@type': 'Rating', ratingValue: review.ratings.finale, bestRating: 10, worstRating: 0 },
+  author: { '@type': 'Organization', name: 'Angolo Rosso' },
+  publisher: { '@type': 'Organization', name: 'Angolo Rosso' },
+  ...(review.excerpt ? { reviewBody: review.excerpt } : {}),
+  ...(review.publishedAt ? { datePublished: review.publishedAt } : {}),
+  ...(review.shareImage ? { image: review.shareImage } : {}),
+};
 ---
-<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage}>
+<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage} jsonld={jsonld}>
   <article class="rev">
     <!-- hero -->
     <header class="rev-hero">
@@ -40,7 +59,11 @@ const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
       <div class="rev-main">
         <p class="rev-lead" data-reveal>{review.excerpt}</p>
         <div class="rev-body" data-reveal>
-          {review.body.map((p: string) => <p set:html={p} />)}
+          {review.body.map((b: { style: string; html: string }) =>
+            b.style && b.style !== 'normal'
+              ? <h3 class="rev-q" set:html={b.html} />
+              : <p set:html={b.html} />
+          )}
         </div>
 
         <!-- gallery (real stills from Sanity; hidden when none) -->
@@ -166,8 +189,19 @@ const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
     color: var(--bone); border-left: 3px solid var(--blood); padding-left: 1.4rem; margin-bottom: 2.2rem;
   }
   .rev-body { max-width: var(--maxw-read); }
-  .rev-body p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
-  .rev-body p:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .rev-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  /* drop-cap ONLY on the first paragraph (was: every paragraph) */
+  .rev-body p:first-of-type::first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  /* inline bold in the prose reads white (not the dim body colour).
+     :global() because <strong> is injected via set:html — it has no astro cid. */
+  .rev-body :global(strong) { color: var(--bone); font-weight: 700; }
+  /* white bold "question" lead-in placed before a paragraph (Studio: Heading 3) */
+  .rev-q {
+    font-family: var(--font-read); font-weight: 700; color: var(--bone);
+    font-size: clamp(1.28rem, 1.7vw, 1.55rem); line-height: 1.35;
+    margin: 2.6rem 0 0.7rem;
+  }
+  .rev-q:first-child { margin-top: 0; }
 
   .rev-block-label { margin-bottom: 1.1rem; }
   .rev-gallery { margin-top: 3rem; }

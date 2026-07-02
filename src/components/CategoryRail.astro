@@ -24,6 +24,14 @@ import { categories } from '../data/sample.js';
         </li>
       ))}
     </ul>
+
+    <a href="#nuove" class="rail-cue label" data-reveal aria-label="Scendi alle nuove recensioni">
+      <span>Nuove recensioni</span>
+      <svg viewBox="0 0 12 28" fill="none" stroke="var(--blood)" stroke-width="2" aria-hidden="true">
+        <line x1="6" y1="1" x2="6" y2="23" stroke-linecap="round"/>
+        <path d="M1 18 L6 24 L11 18" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
   </div>
 </section>
 
@@ -78,6 +86,16 @@ import { categories } from '../data/sample.js';
   .cat-link:hover .cat-tag { opacity: 1; transform: none; }
   .cat-link:hover .cat-rule { width: 48px; }
   .cat-link:focus-visible { outline-offset: 0; }
+
+  .rail-cue {
+    display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+    margin: clamp(2.4rem, 5vw, 4rem) auto 0; width: max-content; color: var(--ash);
+    transition: color var(--t-fast);
+  }
+  .rail-cue:hover { color: var(--blood); }
+  .rail-cue svg { width: 12px; height: 28px; animation: rail-bob 1.8s var(--ease-in-out) infinite; }
+  @keyframes rail-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+  @media (prefers-reduced-motion: reduce) { .rail-cue svg { animation: none; } }
 
   @media (max-width: 1100px) { .rail-grid { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 600px) { .rail-grid { grid-template-columns: repeat(2, 1fr); } .cat-body { padding: 0.8rem; } }

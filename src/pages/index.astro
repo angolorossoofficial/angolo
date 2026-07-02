@@ -5,8 +5,22 @@ import CategoryRail from '../components/CategoryRail.astro';
 import NuoveRecensioni from '../components/NuoveRecensioni.astro';
 import InEvidenza from '../components/InEvidenza.astro';
 import AdSlot from '../components/AdSlot.astro';
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Angolo Rosso',
+  alternateName: 'Angolo Rosso — Recensioni di Cinema Horror',
+  url: 'https://angolorosso.com',
+  inLanguage: 'it-IT',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://angolorosso.com/recensioni?q={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
+};
 ---
-<Base>
+<Base jsonld={jsonld}>
   <Hero />
   <CategoryRail />
   <NuoveRecensioni />

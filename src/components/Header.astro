@@ -67,8 +67,9 @@ const nav = [
   </button>
   <form class="srch-form wrap" action={withBase('/recensioni')} method="get">
     <label class="label" for="q">Cerca un film</label>
-    <input id="q" name="q" type="search" placeholder="Titolo, regista, anno…" autocomplete="off" />
+    <input id="q" name="q" type="search" placeholder="Titolo, regista, anno…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="srch-sug" aria-autocomplete="list" />
     <p class="srch-hint label">Premi invio per cercare nell’archivio</p>
+    <ul class="srch-sug" id="srch-sug" data-srch-sug role="listbox" aria-label="Suggerimenti" hidden></ul>
   </form>
 </div>
 
@@ -150,6 +151,21 @@ const nav = [
   .srch-form input:focus { border-color: var(--blood); }
   .srch-hint { margin-top: 0.4rem; }
 
+  /* live title suggestions (typo-tolerant).
+     :global() on the item selectors — the <a>/<span>/<li> are created in JS
+     (no astro cid), so scoped selectors would miss them. */
+  .srch-sug { margin-top: 1.4rem; display: flex; flex-direction: column; max-height: 44vh; overflow-y: auto; }
+  .srch-sug[hidden] { display: none; }
+  .srch-sug :global(a) {
+    display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap;
+    padding: 0.75rem 0.2rem; border-bottom: 1px solid var(--line);
+    transition: color var(--t-fast), padding-left var(--t-fast);
+  }
+  .srch-sug :global(a:hover), .srch-sug :global(a:focus-visible) { color: var(--blood); padding-left: 0.4rem; }
+  .srch-sug :global(.s-title) { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; font-size: clamp(1.1rem, 2.4vw, 1.7rem); line-height: 1; }
+  .srch-sug :global(.s-meta) { font: 600 0.68rem var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+  .srch-sug :global(.srch-nores) { margin-top: 1.4rem; color: var(--ash); font-family: var(--font-read); font-style: italic; font-size: 1rem; }
+
   @media (max-width: 720px) {
     .logo-sub { display: none; }
     .menu-grid { grid-template-columns: 1fr; gap: 2.4rem; }
@@ -186,4 +202,96 @@ const nav = [
   const onScroll = () => hd?.toggleAttribute('data-scrolled', window.scrollY > 24);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+
+  // --- live, typo-tolerant title suggestions in the full-screen search ---
+  const sInput = srch?.querySelector('input') as HTMLInputElement | null;
+  const sList = srch?.querySelector('[data-srch-sug]') as HTMLElement | null;
+  const BASE = import.meta.env.BASE_URL;
+  let INDEX: Array<Record<string, any>> | null = null;
+  let indexPromise: Promise<void> | null = null;
+
+  const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+  // Levenshtein distance — powers "wrong letter still finds the film".
+  function lev(a: string, b: string) {
+    const m = a.length, n = b.length;
+    if (!m) return n;
+    if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    let cur = new Array(n + 1);
+    for (let i = 1; i <= m; i++) {
+      cur[0] = i;
+      for (let j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      [prev, cur] = [cur, prev];
+    }
+    return prev[n];
+  }
+
+  function scoreItem(it: Record<string, any>, q: string) {
+    const t = norm(it.title || '');
+    const hay = norm([it.title, it.orig, it.director, it.year].filter(Boolean).join(' '));
+    if (t.startsWith(q)) return 100;
+    if (t.includes(q)) return 82;
+    if (hay.includes(q)) return 60;
+    if (q.length >= 3) {
+      let best = 99;
+      for (const w of t.split(/\s+/)) if (w.length >= 3) best = Math.min(best, lev(w, q));
+      if (best <= 2) return 44 - best * 6; // fuzzy: within 2 edits of a title word
+    }
+    return -1;
+  }
+
+  // Fetch once; callers await the SAME in-flight promise so the first
+  // keystrokes (while the index still loads) don't render an empty list.
+  function ensureIndex() {
+    if (!indexPromise) {
+      indexPromise = fetch(`${BASE}search-index.json`)
+        .then((r) => r.json())
+        .then((d) => { INDEX = d; })
+        .catch(() => { INDEX = []; });
+    }
+    return indexPromise;
+  }
+
+  function renderSug(q: string) {
+    if (!sList) return;
+    const query = norm(q.trim());
+    const expand = (v: boolean) => sInput?.setAttribute('aria-expanded', String(v));
+    if (!query || !INDEX) { sList.hidden = true; sList.innerHTML = ''; expand(false); return; }
+    const hits = INDEX
+      .map((it) => ({ it, sc: scoreItem(it, query) }))
+      .filter((x) => x.sc > 0)
+      .sort((a, b) => b.sc - a.sc)
+      .slice(0, 6);
+    sList.innerHTML = '';
+    if (!hits.length) {
+      const li = document.createElement('li');
+      li.className = 'srch-nores';
+      li.textContent = 'Nessun titolo simile. Premi invio per cercare in tutto l’archivio.';
+      sList.appendChild(li);
+      sList.hidden = false; expand(true);
+      return;
+    }
+    for (const { it } of hits) {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      const a = document.createElement('a');
+      a.href = `${BASE}recensioni/${it.slug}`;
+      const title = document.createElement('span');
+      title.className = 's-title';
+      title.textContent = it.title || ''; // textContent = XSS-safe
+      const meta = document.createElement('span');
+      meta.className = 's-meta';
+      meta.textContent = [it.cat, it.year].filter(Boolean).join(' · ');
+      a.append(title, meta);
+      li.appendChild(a);
+      sList.appendChild(li);
+    }
+    sList.hidden = false; expand(true);
+  }
+
+  sInput?.addEventListener('focus', ensureIndex);
+  sInput?.addEventListener('input', () => { ensureIndex().then(() => renderSug(sInput.value)); });
 </script>

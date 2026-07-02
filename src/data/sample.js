@@ -32,19 +32,21 @@ const DEFAULT_ATMO = 'linear-gradient(180deg,#14151b,#0a0b10)';
 const posterBg = (url) =>
   url ? `#0a0b10 url("${url}?w=1400&q=72&auto=format") center/cover no-repeat` : null;
 
-// --- Portable Text -> array of paragraph HTML strings ---------------------
-// Reviews are prose; we keep inline marks (bold/italic/links) and drop block
-// styles (every block becomes a <p>, so the drop-cap CSS still applies).
+// --- Portable Text -> array of { style, html } blocks ---------------------
+// Reviews are prose; we keep inline marks (bold/italic/links) AND the block
+// style. A `normal` block renders as <p> (drop-cap applies to the first one);
+// any heading style (h2/h3/...) renders as a white bold "question" lead-in the
+// redazione can place before a paragraph — editable in the Studio, no redeploy.
 const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-function bodyToParagraphs(blocks) {
+function bodyToBlocks(blocks) {
   if (!Array.isArray(blocks)) return [];
   return blocks
     .filter((b) => b && b._type === 'block')
     .map((block) => {
       const defs = block.markDefs || [];
-      return (block.children || [])
+      const html = (block.children || [])
         .map((span) => {
           let t = esc(span.text || '');
           for (const mark of span.marks || []) {
@@ -61,8 +63,9 @@ function bodyToParagraphs(blocks) {
           return t;
         })
         .join('');
+      return { style: block.style || 'normal', html };
     })
-    .filter((html) => html.trim().length > 0);
+    .filter((b) => b.html.trim().length > 0);
 }
 
 // --- Fetch (build time) ----------------------------------------------------
@@ -155,7 +158,7 @@ export const reviews = (rawReviews || []).map((r) => {
     atmo,
     shareImage: r.posterUrl || null,
     gallery: (r.galleryUrls || []).filter(Boolean),
-    body: bodyToParagraphs(r.body),
+    body: bodyToBlocks(r.body),
   };
 });
 
@@ -170,7 +173,7 @@ export const news = (rawNews || []).map((n) => ({
   publishedAt: n.publishedAt || '',
   atmo: posterBg(n.coverUrl) || n.atmo || DEFAULT_NEWS_ATMO,
   shareImage: n.coverUrl || null,
-  body: bodyToParagraphs(n.body),
+  body: bodyToBlocks(n.body),
 }));
 
 export const newsByDate = () =>

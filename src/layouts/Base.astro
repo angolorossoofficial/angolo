@@ -10,12 +10,14 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 
-interface Props { title?: string; description?: string; image?: string; }
+interface Props { title?: string; description?: string; image?: string; jsonld?: object | object[]; }
 const {
   title = 'Angolo Rosso — Recensioni di Cinema Horror',
   description = 'Recensioni di cinema horror con un’anima: splatter, psicologici, occulto, indipendenti, dark comedy, classici. Quanto vuoi spingerti oltre?',
   image,
+  jsonld,
 } = Astro.props;
+const schemas = jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]) : [];
 
 const site = Astro.site ?? new URL('https://angolorosso.com');
 const canonical = new URL(Astro.url.pathname, site);
@@ -44,6 +46,7 @@ const ogImage = new URL(image ?? '/img/hero-bg.webp', site).href;
     <meta name="twitter:image" content={ogImage} />
     <link rel="icon" type="image/png" sizes="32x32" href={`${import.meta.env.BASE_URL}favicon-32.png`} />
     <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    {schemas.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
     <script is:inline>
       // Hide reveal elements synchronously (no flash). Failsafe forces them
       // visible if the reveal module never runs — content can't get stuck hidden.
