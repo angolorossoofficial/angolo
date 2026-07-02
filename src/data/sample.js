@@ -138,6 +138,10 @@ export const categories = (rawCategories || []).map((c) => ({
   // accent-coloured wash layered over the cover in the UI to keep cards distinct.
   tint: accentWash(c.accent),
   accent: c.accent || null,
+  // true when the client uploaded a real cover photo -> the UI drops the heavy
+  // accent wash so the photo shows through (the wash only exists to differentiate
+  // the plain brand backdrop when no photo is set).
+  hasCover: !!c.coverUrl,
 }));
 
 export const reviews = (rawReviews || []).map((r) => {

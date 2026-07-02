@@ -11,7 +11,7 @@ import { categories } from '../data/sample.js';
     <ul class="rail-grid">
       {categories.map((c, i) => (
         <li class="cat" data-reveal style={`transition-delay:${i * 0.06}s`}>
-          <a href={withBase(`/categoria/${c.slug}`)} class="cat-link">
+          <a href={withBase(`/categoria/${c.slug}`)} class:list={['cat-link', c.hasCover && 'cat-link--photo']}>
             <span class="cat-atmo" style={`background:${c.cover}`} aria-hidden="true"></span>
             <span class="cat-tint" style={`background:${c.tint}`} aria-hidden="true"></span>
             <span class="cat-noise" aria-hidden="true"></span>
@@ -59,6 +59,11 @@ import { categories } from '../data/sample.js';
     transition: opacity var(--t-med);
   }
   .cat-link:hover .cat-tint { opacity: 0.7; }
+  /* real cover photo present -> drop the wash to a light colour grade so the
+     photo reads; the bottom .cat-noise gradient still keeps the title legible */
+  .cat-link--photo .cat-tint { opacity: 0.2; }
+  .cat-link--photo:hover .cat-tint { opacity: 0.12; }
+  .cat-link--photo .cat-atmo { filter: saturate(1) brightness(0.92); }
   .cat-noise {
     position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85));
