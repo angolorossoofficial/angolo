@@ -95,10 +95,18 @@ const NEWS_Q = `*[_type=="news" && defined(slug.current)]|order(publishedAt desc
   body
 }`;
 
-const [rawCategories, rawReviews, rawNews] = await Promise.all([
+// Active ad banners for the rotating pubblicità slot.
+const SPONSOR_Q = `*[_type=="sponsor" && active==true]|order(_createdAt asc){
+  _id, name, url, alt,
+  "desktop": imageDesktop.asset->url,
+  "mobile": imageMobile.asset->url
+}`;
+
+const [rawCategories, rawReviews, rawNews, rawSponsors] = await Promise.all([
   client.fetch(CATEGORY_Q),
   client.fetch(REVIEW_Q),
   client.fetch(NEWS_Q),
+  client.fetch(SPONSOR_Q),
 ]);
 
 // Brand atmospheric backdrop used as the category cover when no dedicated cover
@@ -178,6 +186,17 @@ export const news = (rawNews || []).map((n) => ({
 
 export const newsByDate = () =>
   [...news].sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
+
+// Active ad banners (need at least a desktop image to render).
+export const sponsors = (rawSponsors || [])
+  .filter((s) => s.desktop)
+  .map((s) => ({
+    id: s._id,
+    url: s.url,
+    alt: s.alt || 'Pubblicità',
+    desktop: s.desktop,
+    mobile: s.mobile || null,
+  }));
 
 export const RATING_AXES = [
   { key: 'jumpscare', label: 'Jumpscare' },
