@@ -1,53 +1,40 @@
 ---
 // Ad space. If the redazione has active "Pubblicità" docs in Sanity, their
-// banners rotate here (client-side, no rebuild per spin). With none, a discreet
-// labelled placeholder holds the layout so a banner drops in without a shift.
+// banners rotate here (client-side, no rebuild per spin). With NO active banner
+// the slot renders nothing at all — no empty dashed placeholder on the live site.
 import { sponsors } from '../data/sample.js';
 interface Props { variant?: 'leaderboard' | 'inline'; }
 const { variant = 'leaderboard' } = Astro.props;
 const ads = sponsors;
 ---
+{ads.length > 0 && (
 <aside class:list={['ad', `ad--${variant}`]} data-reveal aria-label="Spazio pubblicitario">
   <div class="wrap">
-    {ads.length > 0 ? (
-      <div class="ad-rot" data-ad-rot>
-        <span class="ad-tag label">Pubblicità</span>
-        {ads.map((a, i) => (
-          <a
-            class:list={['ad-item', i === 0 && 'is-on']}
-            href={a.url}
-            target="_blank"
-            rel="sponsored noopener noreferrer"
-            data-ad-item
-            aria-hidden={i === 0 ? undefined : 'true'}
-            tabindex={i === 0 ? undefined : -1}
-          >
-            <picture>
-              {a.mobile && <source media="(max-width: 640px)" srcset={`${a.mobile}?w=640&q=75&auto=format`} />}
-              <img src={`${a.desktop}?w=1940&q=75&auto=format`} alt={a.alt} loading="lazy" decoding="async" />
-            </picture>
-          </a>
-        ))}
-      </div>
-    ) : (
-      <div class="ad-box">
-        <span class="label">Spazio pubblicitario</span>
-      </div>
-    )}
+    <div class="ad-rot" data-ad-rot>
+      <span class="ad-tag label">Pubblicità</span>
+      {ads.map((a, i) => (
+        <a
+          class:list={['ad-item', i === 0 && 'is-on']}
+          href={a.url}
+          target="_blank"
+          rel="sponsored noopener noreferrer"
+          data-ad-item
+          aria-hidden={i === 0 ? undefined : 'true'}
+          tabindex={i === 0 ? undefined : -1}
+        >
+          <picture>
+            {a.mobile && <source media="(max-width: 640px)" srcset={`${a.mobile}?w=640&q=75&auto=format`} />}
+            <img src={`${a.desktop}?w=1940&q=75&auto=format`} alt={a.alt} loading="lazy" decoding="async" />
+          </picture>
+        </a>
+      ))}
+    </div>
   </div>
 </aside>
+)}
 
 <style>
   .ad { padding-block: clamp(1.5rem, 3vw, 2.5rem); }
-
-  /* placeholder (no active banner) */
-  .ad-box {
-    display: grid; place-items: center;
-    border: 1px dashed var(--line); background: color-mix(in srgb, var(--ink) 60%, transparent);
-    color: var(--ash-dim);
-  }
-  .ad--leaderboard .ad-box { aspect-ratio: 970 / 120; max-height: 130px; }
-  .ad--inline .ad-box { aspect-ratio: 300 / 100; max-width: 360px; margin-inline: auto; }
   .ad .label { color: var(--ash-dim); }
 
   /* live rotating banner — the box reserves height so rotation never shifts the page */

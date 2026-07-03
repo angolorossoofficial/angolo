@@ -57,7 +57,16 @@ const paragraphs = [
   }
   .about-prose { max-width: var(--maxw-read); }
   .about-prose p { font-family: var(--font-read); font-size: var(--fs-read); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
-  .about-prose p:first-of-type:first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .about-prose p:first-of-type::first-letter {
+    color: var(--blood); font-weight: 600;
+    float: left; font-size: 3.1em; line-height: 0.7; margin: 0.02em 0.12em 0 0;
+  }
+  @supports (initial-letter: 2) or (-webkit-initial-letter: 2) {
+    .about-prose p:first-of-type::first-letter {
+      initial-letter: 2; -webkit-initial-letter: 2;
+      float: none; font-size: inherit; line-height: inherit; margin: 0 0.6rem 0 0;
+    }
+  }
 
   .about-card { position: relative; background: var(--ink); border: 1px solid var(--line); padding: clamp(1.6rem, 3vw, 2.2rem); box-shadow: var(--shadow-card); position: sticky; top: 6rem; }
   .about-frame { inset: 9px !important; }

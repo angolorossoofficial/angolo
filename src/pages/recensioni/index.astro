@@ -4,7 +4,7 @@ import ReviewCard from '../../components/ReviewCard.astro';
 import { reviewsByDate, categories } from '../../data/sample.js';
 
 const all = reviewsByDate();
-const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
+const years = [...new Set(all.map((r) => r.year))].filter((y) => y != null).sort((a, b) => b - a);
 ---
 <Base title="Archivio — Angolo Rosso" description="Tutte le recensioni di cinema horror: filtra per categoria, anno e voto, o cerca un titolo.">
   <section class="arc section">
@@ -32,17 +32,18 @@ const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
         </div>
       </form>
 
-      <div class="arc-chips" data-reveal role="tablist" aria-label="Filtra per categoria">
-        <button class="chip is-on" data-cat="" type="button">Tutte</button>
-        {categories.map((c) => <button class="chip" data-cat={c.slug} type="button">{c.title}</button>)}
+      <div class="arc-chips" data-reveal role="group" aria-label="Filtra per categoria">
+        <button class="chip is-on" data-cat="" type="button" aria-pressed="true">Tutte</button>
+        {categories.map((c) => <button class="chip" data-cat={c.slug} type="button" aria-pressed="false">{c.title}</button>)}
       </div>
 
       <p class="arc-count label" id="arc-count" data-reveal></p>
 
+      <h2 class="vh">Elenco delle recensioni</h2>
       <div class="arc-grid" id="arc-grid">
         {all.map((r, i) => (
           <div class="arc-item" data-cat={r.category} data-year={r.year}
-            data-genres={r.genres.join('|').toLowerCase()} data-vote={r.ratings.finale}
+            data-vote={r.ratings.finale}
             data-text={`${r.title} ${r.director} ${r.originalTitle}`.toLowerCase()}>
             <ReviewCard review={r} index={i} />
           </div>
@@ -54,6 +55,8 @@ const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
 </Base>
 
 <style>
+  /* clear the fixed header at rest (matches the other subpages) */
+  .arc { padding-top: clamp(7rem, 12vw, 10rem); }
   .arc-head { margin-bottom: 2rem; }
   .arc-title { font-size: var(--fs-h1); margin-top: 0.6rem; }
 
@@ -68,7 +71,8 @@ const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
   .arc-field { display: flex; flex-direction: column; gap: 0.4rem; }
   .arc-field select {
     background: var(--ink); color: var(--bone); border: 1px solid var(--line);
-    padding: 0.55rem 0.8rem; font: inherit; font-size: 0.9rem; cursor: pointer; border-radius: 2px;
+    /* 1rem (≥16px) so iOS doesn't zoom on focus; 44px min tap target */
+    padding: 0.55rem 0.8rem; font: inherit; font-size: 1rem; min-height: 44px; cursor: pointer; border-radius: 2px;
   }
   .arc-field select:focus-visible { border-color: var(--blood); outline: none; }
 
@@ -76,7 +80,7 @@ const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
   .chip {
     font-family: var(--font-ui); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--bone-dim); background: var(--ink); border: 1px solid var(--line);
-    padding: 0.5rem 0.95rem; border-radius: 99px; transition: all var(--t-fast);
+    padding: 0.5rem 0.95rem; min-height: 44px; border-radius: 99px; transition: all var(--t-fast);
   }
   .chip:hover { border-color: color-mix(in srgb, var(--blood) 50%, var(--line)); color: var(--bone); }
   .chip.is-on { background: var(--blood); border-color: var(--blood); color: #fff; }
@@ -126,8 +130,9 @@ const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
 
   chips.forEach((c) =>
     c.addEventListener('click', () => {
-      chips.forEach((x) => x.classList.remove('is-on'));
+      chips.forEach((x) => { x.classList.remove('is-on'); x.setAttribute('aria-pressed', 'false'); });
       c.classList.add('is-on');
+      c.setAttribute('aria-pressed', 'true');
       cat = c.dataset.cat || '';
       apply();
     })

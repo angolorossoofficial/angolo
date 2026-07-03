@@ -30,8 +30,10 @@ const cat = getCategory(review.category);
   .card-poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
   .card-atmo { position: absolute; inset: 0; transition: transform var(--t-med) var(--ease-out); filter: brightness(.9); }
   .card:hover .card-atmo { transform: scale(1.06); filter: brightness(1.05); }
-  .card-grad { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(7,7,10,.9)); }
-  .card-cat { position: absolute; top: 0.85rem; left: 0.9rem; z-index: 2; color: var(--bone); }
+  /* scrim top AND bottom: bottom for the title area, a lighter top so the
+     category label stays legible over a bright poster */
+  .card-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.55) 0%, transparent 22%, transparent 45%, rgba(7,7,10,.9)); }
+  .card-cat { position: absolute; top: 0.85rem; left: 0.9rem; z-index: 2; color: var(--bone); text-shadow: 0 1px 4px rgba(0,0,0,.6); }
   .card-vote {
     position: absolute; bottom: 0.7rem; right: 0.9rem; z-index: 2;
     font-family: var(--font-display); display: flex; align-items: baseline; gap: 1px;

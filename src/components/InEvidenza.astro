@@ -20,14 +20,14 @@ const labelFor = { consigliata: 'Consigliata', popolare: 'Popolare', importante:
       </a>
       <div class="evid-body">
         <p class="evid-cat label">{cat?.title} · {feat.year}</p>
-        <h3 class="evid-title display">{feat.title}</h3>
+        <h2 class="evid-title display">{feat.title}</h2>
         <p class="evid-ex">{feat.excerpt}</p>
 
         <ul class="evid-ratings">
           {RATING_AXES.map((a) => (
             <li>
               <span class="evid-ra-label">{a.label}</span>
-              <span class="evid-bar"><span class="evid-fill" style={`width:${Math.min(100, feat.ratings[a.key] * 20)}%`}></span></span>
+              <span class="evid-bar"><span class="evid-fill" style={`width:${Math.min(100, (feat.ratings[a.key] ?? 0) * 20)}%`}></span></span>
             </li>
           ))}
         </ul>

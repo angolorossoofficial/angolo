@@ -40,7 +40,7 @@ const jsonld = {
   ...(review.shareImage ? { image: review.shareImage } : {}),
 };
 ---
-<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage} jsonld={jsonld}>
+<Base title={`${review.title} — Angolo Rosso`} description={review.excerpt} image={review.shareImage} type="article" jsonld={jsonld}>
   <article class="rev">
     <!-- hero -->
     <header class="rev-hero">
@@ -123,7 +123,7 @@ const jsonld = {
               <button type="submit" class="eng-btn" data-vote-submit>Vota</button>
             </form>
             <p class="eng-voted" data-voted hidden>Hai votato <b data-voted-val></b>/10. Grazie!</p>
-            <p class="eng-msg" data-vote-msg hidden></p>
+            <p class="eng-msg" data-vote-msg role="status" aria-live="polite" hidden></p>
           </div>
 
           <!-- comments -->
@@ -135,17 +135,16 @@ const jsonld = {
 
             <form class="eng-form" data-commentform novalidate>
               <div class="eng-fields">
-                <input class="eng-in" name="name" type="text" placeholder="Nome" maxlength="60" required autocomplete="name" />
-                <input class="eng-in" name="email" type="email" placeholder="Email (non pubblicata)" maxlength="120" required autocomplete="email" />
+                <input class="eng-in" name="name" type="text" placeholder="Nome" aria-label="Nome" maxlength="60" required autocomplete="name" />
               </div>
-              <textarea class="eng-in eng-ta" name="message" placeholder="Il tuo commento…" maxlength="2000" rows="3" required></textarea>
+              <textarea class="eng-in eng-ta" name="message" placeholder="Il tuo commento…" aria-label="Il tuo commento" maxlength="2000" rows="3" required></textarea>
               <!-- honeypot: hidden from humans; bots fill it and get silently dropped -->
               <input class="eng-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
               <div class="eng-formfoot">
-                <p class="eng-note">L’email non viene pubblicata. Il commento appare dopo l’approvazione della redazione.</p>
+                <p class="eng-note">Il commento appare dopo l’approvazione della redazione.</p>
                 <button type="submit" class="eng-btn" data-comment-submit>Invia</button>
               </div>
-              <p class="eng-msg" data-form-msg hidden></p>
+              <p class="eng-msg" data-form-msg role="status" aria-live="polite" hidden></p>
             </form>
           </div>
         </section>
@@ -190,8 +189,19 @@ const jsonld = {
   }
   .rev-body { max-width: var(--maxw-read); }
   .rev-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
-  /* drop-cap ONLY on the first paragraph (was: every paragraph) */
-  .rev-body p:first-of-type::first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  /* drop-cap ONLY on the first paragraph (was: every paragraph).
+     Float fallback for Firefox (no initial-letter support); browsers that DO
+     support initial-letter get the cleaner metric via @supports below. */
+  .rev-body p:first-of-type::first-letter {
+    color: var(--blood); font-weight: 600;
+    float: left; font-size: 3.1em; line-height: 0.7; margin: 0.02em 0.12em 0 0;
+  }
+  @supports (initial-letter: 2) or (-webkit-initial-letter: 2) {
+    .rev-body p:first-of-type::first-letter {
+      initial-letter: 2; -webkit-initial-letter: 2;
+      float: none; font-size: inherit; line-height: inherit; margin: 0 0.6rem 0 0;
+    }
+  }
   /* inline bold in the prose reads white (not the dim body colour).
      :global() because <strong> is injected via set:html — it has no astro cid. */
   .rev-body :global(strong) { color: var(--bone); font-weight: 700; }
@@ -263,7 +273,7 @@ const jsonld = {
     align-self: flex-start; cursor: pointer;
     font: 700 0.74rem var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
     color: #fff; background: var(--blood); border: 1px solid var(--blood);
-    padding: 0.7rem 1.5rem; border-radius: 2px; transition: all var(--t-fast);
+    padding: 0.7rem 1.5rem; min-height: 44px; border-radius: 2px; transition: all var(--t-fast);
   }
   .eng-btn:hover { background: var(--blood-bright); border-color: var(--blood-bright); }
   .eng-btn:disabled { opacity: 0.5; cursor: default; }
@@ -274,15 +284,16 @@ const jsonld = {
   .eng-empty { color: var(--ash); font-family: var(--font-read); font-style: italic; }
   .eng-c { border-left: 2px solid var(--blood-deep); padding-left: 1rem; }
   .eng-c-head { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
-  .eng-c-name { font: 700 0.92rem var(--font-ui); color: var(--bone); }
+  .eng-c-name { font: 700 0.92rem var(--font-ui); color: var(--bone); overflow-wrap: anywhere; }
   .eng-c-date { font: 500 0.72rem var(--font-ui); letter-spacing: 0.04em; color: var(--ash); }
-  .eng-c-msg { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; }
+  .eng-c-msg { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 
   .eng-form { display: flex; flex-direction: column; gap: 0.8rem; }
-  .eng-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .eng-fields { display: grid; grid-template-columns: 1fr; gap: 0.8rem; }
   .eng-in {
     width: 100%; background: var(--void-2); border: 1px solid var(--line); color: var(--bone);
-    font: 400 0.95rem var(--font-read); padding: 0.7rem 0.9rem; border-radius: 2px;
+    /* ≥16px so iOS Safari doesn't auto-zoom on focus */
+    font: 400 1rem var(--font-read); padding: 0.7rem 0.9rem; border-radius: 2px;
     transition: border-color var(--t-fast);
   }
   .eng-in::placeholder { color: var(--ash); }
@@ -454,10 +465,9 @@ const jsonld = {
       const btn = $('[data-comment-submit]') as HTMLButtonElement | null;
       const fd = new FormData(cForm);
       const name = String(fd.get('name') || '').trim();
-      const email = String(fd.get('email') || '').trim();
       const message = String(fd.get('message') || '').trim();
-      if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || message.length < 3) {
-        setMsg('Controlla nome, email e commento.', true);
+      if (name.length < 2 || message.length < 3) {
+        setMsg('Controlla nome e commento.', true);
         return;
       }
       if (btn) btn.disabled = true;
@@ -467,7 +477,7 @@ const jsonld = {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            name, email, message,
+            name, message,
             website: fd.get('website') || '',
             reviewSlug: slug, reviewTitle: title,
           }),

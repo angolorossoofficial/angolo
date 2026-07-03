@@ -20,3 +20,19 @@
 # Set it in Netlify: Site settings -> Environment variables. Never commit it.
 
 # SPA-style 404 handled by Astro's static 404 page; no redirects needed.
+
+# --- Security headers -------------------------------------------------------
+# CSP is tuned to the site's real sources: bundled JS/CSS ('self'), inline
+# reveal script + inline style attributes ('unsafe-inline'), the grain SVG
+# (data:), Sanity image CDN + query API, and the YouTube trailer embeds. The
+# actual injection sinks are also escaped in code, so this is defense-in-depth.
+# ('unsafe-inline' on script can be tightened to hashes/nonces later.)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.sanity.io; font-src 'self' data:; connect-src 'self' https://*.apicdn.sanity.io https://*.api.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"

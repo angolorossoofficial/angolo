@@ -5,6 +5,7 @@ import { reviewsByDate } from '../data/sample.js';
 
 const latest = reviewsByDate().slice(0, 6);
 ---
+{latest.length > 0 && (
 <section class="nuove section" id="nuove">
   <div class="wrap">
     <SectionHeading label="Aggiornato di continuo" title="Nuove Recensioni" href="/recensioni" linkText="Tutto l’archivio" />
@@ -13,6 +14,7 @@ const latest = reviewsByDate().slice(0, 6);
     </div>
   </div>
 </section>
+)}
 
 <style>
   .nuove-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }

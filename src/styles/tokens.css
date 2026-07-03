@@ -17,7 +17,7 @@
   --bone: #ede9e3; /* primary text — warm off-white, filmic */
   --bone-dim: #b9b4ad;
   --ash: #807c86; /* captions, meta */
-  --ash-dim: #767380; /* small print — lifted for WCAG-AA contrast on the void */
+  --ash-dim: #948f9c; /* small print — ≥4.5:1 (WCAG-AA) on the void */
 
   --neon-cold: #3a6bff; /* only inside imagery accents */
 

@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { withBase } from '../lib/url';
 
-const updated = '30 giugno 2026';
+const updated = '3 luglio 2026';
 const description =
   'Informativa sulla privacy e sui cookie di Angolo Rosso, ai sensi del Regolamento (UE) 2016/679 (GDPR) e della normativa italiana.';
 ---
@@ -36,6 +36,7 @@ const description =
         <ul>
           <li><strong>Dati di navigazione</strong> — il fornitore di hosting può registrare, per finalità tecniche e di sicurezza, dati come indirizzo IP, tipo di browser e pagine visitate (log del server).</li>
           <li><strong>Comunicazioni volontarie</strong> — se ci scrivi via email o tramite Instagram, trattiamo i dati che ci fornisci spontaneamente, solo per risponderti.</li>
+          <li><strong>Commenti e voti</strong> — se lasci un commento o un voto sotto una recensione, trattiamo il nome che indichi e il testo del commento (il voto è un numero da 0 a 10). Dettagli nella sezione «Commenti e voti».</li>
           <li><strong>Preferenza sui cookie</strong> — la tua scelta sul banner viene salvata localmente nel tuo browser (vedi sotto).</li>
         </ul>
 
@@ -53,15 +54,27 @@ const description =
           <li><strong>YouTube / Google</strong> — le pagine delle recensioni possono includere il trailer del film tramite YouTube. Il player <strong>non viene caricato</strong> finché non lo richiedi (accettando dal banner o cliccando «Carica il trailer»). Solo a quel punto YouTube/Google possono installare cookie, anche di profilazione. Informativa: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">policies.google.com/privacy</a>.</li>
         </ul>
         <p>
-          Al momento <strong>non utilizziamo strumenti di statistica/analytics</strong> (es. Google Analytics)
-          né cookie pubblicitari attivi. Gli spazi pubblicitari eventualmente presenti sono segnaposto non attivi;
-          questa informativa verrà aggiornata qualora vengano attivati.
+          Al momento <strong>non utilizziamo strumenti di statistica/analytics</strong> (es. Google Analytics).
+          Gli spazi pubblicitari possono mostrare banner (immagine + link) gestiti dalla redazione: al momento
+          <strong>non installano cookie né strumenti di tracciamento</strong>. Questa informativa verrà aggiornata
+          qualora vengano introdotti strumenti di statistica o pubblicità con tracciamento.
         </p>
+
+        <h2>Commenti e voti</h2>
+        <p>
+          Sotto ogni recensione puoi lasciare un <strong>commento</strong> e un <strong>voto del pubblico</strong> (da 0 a 10).
+        </p>
+        <ul>
+          <li><strong>Dati raccolti</strong> — il <strong>nome</strong> che indichi (può essere uno pseudonimo) e il <strong>testo</strong> del commento. <strong>Non chiediamo né conserviamo la tua email.</strong> Per il voto registriamo solo il numero; per evitare voti doppi usiamo un identificativo tecnico pseudonimo (un valore non reversibile derivato dall'indirizzo IP), senza conservare l'IP in chiaro.</li>
+          <li><strong>Pubblicazione e moderazione</strong> — i commenti appaiono sul sito, con il nome indicato, <strong>solo dopo l'approvazione della redazione</strong>. Il voto contribuisce in forma aggregata alla media «Voto del pubblico».</li>
+          <li><strong>Dove sono conservati</strong> — commenti e voti sono salvati sulla piattaforma di gestione contenuti <strong>Sanity</strong> (Sanity.io), che agisce come responsabile del trattamento (art. 28 GDPR); i dati possono essere trattati anche fuori dall'UE con adeguate garanzie (artt. 44 e ss. GDPR).</li>
+          <li><strong>Conservazione</strong> — finché il commento resta pubblicato, o finché non ne chiedi la rimozione scrivendo al titolare.</li>
+        </ul>
 
         <h2>Gestione del consenso</h2>
         <p>
-          Puoi modificare la tua scelta in qualsiasi momento dal link
-          <a href="#" data-cookie-reopen><strong>«Gestisci cookie»</strong></a> in fondo a ogni pagina,
+          Puoi modificare la tua scelta in qualsiasi momento dal pulsante
+          <button type="button" class="linkbtn" data-cookie-reopen><strong>«Gestisci cookie»</strong></button> in fondo a ogni pagina,
           oppure cancellando i dati del sito dal tuo browser.
         </p>
 
@@ -69,6 +82,7 @@ const description =
         <ul>
           <li>Dati di navigazione e cookie tecnici: <em>legittimo interesse</em> a erogare e proteggere il sito (art. 6.1.f GDPR).</li>
           <li>Contenuti di terze parti (YouTube): <em>consenso</em> (art. 6.1.a GDPR), revocabile in ogni momento.</li>
+          <li>Commenti e voti: <em>consenso</em> manifestato con l'invio (art. 6.1.a) e <em>legittimo interesse</em> a moderazione e prevenzione degli abusi (art. 6.1.f).</li>
           <li>Risposte a comunicazioni volontarie: <em>riscontro alla tua richiesta</em> (art. 6.1.b GDPR).</li>
         </ul>
 
@@ -112,6 +126,7 @@ const description =
   .legal-body ul { padding-left: 1.2rem; list-style: disc; }
   .legal-body li { margin-bottom: 0.6rem; }
   .legal-body a { color: var(--blood); text-decoration: underline; text-underline-offset: 2px; }
+  .legal-body .linkbtn { color: var(--blood); background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   .legal-body strong { color: var(--bone); }
   .legal-body code { font-family: ui-monospace, monospace; font-size: 0.86em; background: var(--ink-2); padding: 0.1em 0.4em; border-radius: 3px; color: var(--bone); }
   .legal-back { display: inline-block; margin-top: 2.4rem; color: var(--blood); transition: padding-left var(--t-fast); }

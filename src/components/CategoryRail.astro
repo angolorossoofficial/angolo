@@ -88,7 +88,7 @@ import { categories } from '../data/sample.js';
   }
   .cat-link:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--blood) 50%, var(--line)); }
   .cat-link:hover .cat-atmo { transform: scale(1.08); filter: saturate(1.1) brightness(1); }
-  .cat-link:hover .cat-tag { opacity: 1; transform: none; }
+  .cat-link:hover .cat-tag, .cat-link:focus-visible .cat-tag { opacity: 1; transform: none; }
   .cat-link:hover .cat-rule { width: 48px; }
   .cat-link:focus-visible { outline-offset: 0; }
 

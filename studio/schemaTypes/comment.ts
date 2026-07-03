@@ -2,8 +2,9 @@ import {defineType, defineField} from 'sanity'
 
 // Public comment, submitted from the site via a Netlify Function and written
 // here UNapproved. The redazione approves it in Studio (approved = true) before
-// it becomes visible on the review page. Email is PRIVATE — kept for moderation
-// and reply only, never rendered on the site.
+// it becomes visible on the review page. NOTE: no email is collected or stored —
+// the whole dataset is public-read, so storing PII here would leak it. Name +
+// message only; moderation is by approve/reject.
 export const comment = defineType({
   name: 'comment',
   title: 'Commento',
@@ -14,12 +15,6 @@ export const comment = defineType({
     defineField({
       name: 'name',
       title: 'Nome',
-      type: 'string',
-    }),
-    defineField({
-      name: 'email',
-      title: 'Email (privata)',
-      description: 'Non viene mai mostrata sul sito. Solo per moderazione/risposta.',
       type: 'string',
     }),
     defineField({

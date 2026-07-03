@@ -7,7 +7,7 @@ const year = new Date().getFullYear();
   <div class="wrap ft-grid">
     <div class="ft-brand">
       <a href={withBase('/')} class="ft-logo" aria-label="Angolo Rosso — home">
-        <img src={withBase('/img/logo-mark.png')} alt="" />
+        <img src={withBase('/img/logo-mark.png')} alt="" width="42" height="38" />
         <span class="display">Angolo <span class="red">Rosso</span></span>
       </a>
       <p class="ft-claim">Ogni categoria nasconde un mondo.<br /><span class="red">Sei pronto a entrarci?</span></p>
@@ -44,7 +44,7 @@ const year = new Date().getFullYear();
         <li><a href={withBase('/chi-siamo')}>Chi siamo</a></li>
         <li><a href={withBase('/contatti')}>Contatti</a></li>
         <li><a href={withBase('/privacy')}>Privacy & Cookie</a></li>
-        <li><a href="#" data-cookie-reopen>Gestisci cookie</a></li>
+        <li><button type="button" class="ft-linkbtn" data-cookie-reopen>Gestisci cookie</button></li>
       </ul>
     </nav>
   </div>
@@ -75,8 +75,9 @@ const year = new Date().getFullYear();
   .ft-tmdb { padding-block: 0 1.4rem; font-size: 0.62rem; letter-spacing: 0.08em; color: var(--ash-dim); }
   .ft-col .label { margin-bottom: 1.1rem; }
   .ft-col ul { display: flex; flex-direction: column; gap: 0.55rem; }
-  .ft-col a { font-size: 0.92rem; color: var(--bone-dim); transition: color var(--t-fast), padding-left var(--t-fast); }
-  .ft-col a:hover { color: var(--blood); padding-left: 0.3rem; }
+  .ft-col a, .ft-linkbtn { font-size: 0.92rem; color: var(--bone-dim); transition: color var(--t-fast), padding-left var(--t-fast); }
+  .ft-col a:hover, .ft-linkbtn:hover { color: var(--blood); padding-left: 0.3rem; }
+  .ft-linkbtn { font-family: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
   .ft-base { display: flex; justify-content: space-between; gap: 1rem; padding-block: 1.4rem; border-top: 1px solid var(--line); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash-dim); flex-wrap: wrap; }
 
   /* agency credit — appears in the footer of every page */

@@ -2,14 +2,63 @@
 // engagement functions (comments, votes). The write token lives ONLY in the
 // Netlify environment (SANITY_WRITE_TOKEN) and is never exposed to the browser.
 import {createClient} from '@sanity/client'
+import {createHash} from 'node:crypto'
+
+// Canonical project/dataset: match the build-side vars (PUBLIC_*) so moving the
+// project by setting only those doesn't silently keep writing to the old default.
+const PROJECT_ID =
+  process.env.SANITY_PROJECT_ID || process.env.PUBLIC_SANITY_PROJECT_ID || '82x61wc7'
+const DATASET =
+  process.env.SANITY_DATASET || process.env.PUBLIC_SANITY_DATASET || 'production'
 
 export const writeClient = createClient({
-  projectId: process.env.SANITY_PROJECT_ID || '82x61wc7',
-  dataset: process.env.SANITY_DATASET || 'production',
+  projectId: PROJECT_ID,
+  dataset: DATASET,
   apiVersion: '2021-10-21',
   token: process.env.SANITY_WRITE_TOKEN,
   useCdn: false,
 })
+
+// --- abuse controls -------------------------------------------------------
+// Browser cross-site POSTs carry an Origin header; reject any that isn't ours.
+// (Absent Origin is allowed: same-origin navigations/no-cors edge cases. Scripted
+// curl abuse is additionally bounded by slug validation + per-IP vote dedup.)
+const ALLOWED_HOSTS = new Set(['angolorosso.com', 'www.angolorosso.com'])
+export const originAllowed = (req) => {
+  const origin = req.headers.get('origin')
+  if (!origin) return true
+  try {
+    const h = new URL(origin).hostname
+    return ALLOWED_HOSTS.has(h) || h === 'localhost' || h.endsWith('.netlify.app')
+  } catch {
+    return false
+  }
+}
+
+// Reject votes/comments for slugs that don't map to a real published review.
+export const reviewExists = async (slug) => {
+  if (!slug) return false
+  try {
+    const n = await writeClient.fetch('count(*[_type=="review" && slug.current==$slug])', {slug})
+    return n > 0
+  } catch {
+    return false
+  }
+}
+
+// Deterministic vote _id per (review, client-IP) → createIfNotExists makes votes
+// idempotent server-side: one vote per device/IP survives even if localStorage is
+// cleared or the endpoint is hit raw. Only a salted hash of the IP is used (no raw
+// IP stored); tune the salt via VOTE_SALT.
+export const voteDedupeId = (req, slug) => {
+  const ip =
+    req.headers.get('x-nf-client-connection-ip') ||
+    (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
+    'unknown'
+  const salt = process.env.VOTE_SALT || 'ar-vote-v1'
+  const h = createHash('sha256').update(`${salt}|${ip}|${slug}`).digest('hex').slice(0, 24)
+  return `vote.${slug}.${h}`.replace(/[^a-zA-Z0-9._-]/g, '-')
+}
 
 export const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {

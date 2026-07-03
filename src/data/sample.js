@@ -37,8 +37,24 @@ const posterBg = (url) =>
 // style. A `normal` block renders as <p> (drop-cap applies to the first one);
 // any heading style (h2/h3/...) renders as a white bold "question" lead-in the
 // redazione can place before a paragraph — editable in the Studio, no redeploy.
+// Escape ALL five HTML-significant chars — including quotes, so a value used in
+// an attribute (link href) can't break out into a new attribute/event handler.
 const esc = (s) =>
-  String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Allow only safe link schemes; reject javascript:/data:/etc. Relative and
+// anchor links pass through. Returns null when the href isn't allowed.
+const safeHref = (href) => {
+  const h = String(href || '').trim();
+  if (/^(https?:|mailto:)/i.test(h)) return h;
+  if (/^[/#]/.test(h)) return h;
+  return null;
+};
 
 function bodyToBlocks(blocks) {
   if (!Array.isArray(blocks)) return [];
@@ -55,8 +71,9 @@ function bodyToBlocks(blocks) {
             else if (mark === 'underline') t = `<u>${t}</u>`;
             else {
               const def = defs.find((d) => d._key === mark);
-              if (def && def._type === 'link' && def.href) {
-                t = `<a href="${esc(def.href)}" target="_blank" rel="noopener noreferrer">${t}</a>`;
+              if (def && def._type === 'link') {
+                const href = safeHref(def.href);
+                if (href) t = `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${t}</a>`;
               }
             }
           }
@@ -67,6 +84,28 @@ function bodyToBlocks(blocks) {
     })
     .filter((b) => b.html.trim().length > 0);
 }
+
+// Normalize ANY YouTube URL form (watch / youtu.be / shorts / embed) into a
+// privacy-friendly nocookie embed URL. Returns null for anything that isn't a
+// valid YouTube video — which both fixes "client pasted a watch link → refused
+// to connect" AND blocks non-YouTube / javascript: iframe sources.
+const ytEmbed = (url) => {
+  if (!url) return null;
+  let u;
+  try { u = new URL(String(url).trim()); } catch { return null; }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+  const host = u.hostname.replace(/^www\.|^m\./, '');
+  let id = '';
+  if (host === 'youtu.be') id = u.pathname.slice(1);
+  else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+    if (u.pathname === '/watch') id = u.searchParams.get('v') || '';
+    else if (u.pathname.startsWith('/embed/')) id = u.pathname.slice(7);
+    else if (u.pathname.startsWith('/shorts/')) id = u.pathname.slice(8);
+  }
+  id = (id || '').split('/')[0];
+  if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) return null;
+  return `https://www.youtube-nocookie.com/embed/${id}`;
+};
 
 // --- Fetch (build time) ----------------------------------------------------
 const CATEGORY_Q = `*[_type=="category"]|order(order asc){
@@ -165,7 +204,7 @@ export const reviews = (rawReviews || []).map((r) => {
     excerpt: r.excerpt || '',
     publishedAt: r.publishedAt || '',
     highlight: r.highlight || null,
-    trailer: r.trailer || null,
+    trailer: ytEmbed(r.trailer),
     ratings,
     atmo,
     shareImage: r.posterUrl || null,

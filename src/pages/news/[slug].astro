@@ -13,8 +13,19 @@ const date = article.publishedAt
   ? new Date(article.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
   : '';
 const more = newsByDate().filter((n) => n.slug !== article.slug).slice(0, 2);
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsArticle',
+  headline: article.title,
+  ...(article.excerpt ? { description: article.excerpt } : {}),
+  ...(article.publishedAt ? { datePublished: article.publishedAt } : {}),
+  author: { '@type': article.author ? 'Person' : 'Organization', name: article.author || 'Angolo Rosso' },
+  publisher: { '@type': 'Organization', name: 'Angolo Rosso' },
+  ...(article.shareImage ? { image: article.shareImage } : {}),
+};
 ---
-<Base title={`${article.title} — Angolo Rosso`} description={article.excerpt} image={article.shareImage}>
+<Base title={`${article.title} — Angolo Rosso`} description={article.excerpt} image={article.shareImage} type="article" jsonld={jsonld}>
   <article class="art">
     <header class="art-hero">
       <span class="art-atmo" style={`background:${article.atmo}`} aria-hidden="true"></span>
@@ -78,7 +89,16 @@ const more = newsByDate().filter((n) => n.slug !== article.slug).slice(0, 2);
   }
   .art-body { max-width: var(--maxw-read); }
   .art-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
-  .art-body p:first-of-type::first-letter { initial-letter: 2; -webkit-initial-letter: 2; color: var(--blood); font-weight: 600; margin-right: 0.6rem; }
+  .art-body p:first-of-type::first-letter {
+    color: var(--blood); font-weight: 600;
+    float: left; font-size: 3.1em; line-height: 0.7; margin: 0.02em 0.12em 0 0;
+  }
+  @supports (initial-letter: 2) or (-webkit-initial-letter: 2) {
+    .art-body p:first-of-type::first-letter {
+      initial-letter: 2; -webkit-initial-letter: 2;
+      float: none; font-size: inherit; line-height: inherit; margin: 0 0.6rem 0 0;
+    }
+  }
   .art-body :global(strong) { color: var(--bone); font-weight: 700; }
   .art-q {
     font-family: var(--font-read); font-weight: 700; color: var(--bone);

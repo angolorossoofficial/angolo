@@ -22,7 +22,7 @@ const nav = [
       </span>
     </a>
 
-    <button class="hd-btn hd-search" aria-label="Cerca" data-search-open>
+    <button class="hd-btn hd-search" aria-label="Cerca" aria-expanded="false" aria-controls="site-search" data-search-open>
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--blood)" stroke-width="2">
         <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke-linecap="round"/>
       </svg>
@@ -58,7 +58,7 @@ const nav = [
 </nav>
 
 <!-- search overlay -->
-<div class="srch" data-search aria-hidden="true">
+<div class="srch" id="site-search" data-search aria-hidden="true">
   <button class="menu-close hd-btn" aria-label="Chiudi la ricerca" data-search-close>
     <svg viewBox="0 0 24 24" fill="none" stroke="var(--bone)" stroke-width="2" aria-hidden="true">
       <line x1="5" y1="5" x2="19" y2="19" stroke-linecap="round"/>
@@ -120,9 +120,22 @@ const nav = [
     opacity: 0; visibility: hidden; transform: translateY(-1.5%);
     transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), visibility var(--t-med);
     display: flex; flex-direction: column; justify-content: center;
+    /* scroll when the content is taller than the viewport (short/landscape phones) */
+    overflow-y: auto; overscroll-behavior: contain;
   }
   .menu.is-open, .srch.is-open { opacity: 1; visibility: visible; transform: none; }
-  .menu-close { position: absolute; top: clamp(1rem,2vw,1.6rem); right: var(--pad-x); width: 44px; height: 44px; }
+  .menu-close { position: absolute; top: max(clamp(1rem,2vw,1.6rem), env(safe-area-inset-top)); right: var(--pad-x); width: 44px; height: 44px; z-index: 2; }
+  /* On short or narrow viewports, top-align + let it scroll (centered content
+     would clip its top and be unreachable) and bring the foot into flow. */
+  @media (max-height: 760px), (max-width: 720px) {
+    .menu, .srch {
+      justify-content: flex-start;
+      padding-top: max(5rem, calc(env(safe-area-inset-top) + 4.5rem));
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    /* .menu prefix beats the later plain `.menu-foot { position:absolute }` */
+    .menu .menu-foot { position: static; margin-top: 2.4rem; }
+  }
   .menu-close svg { width: 24px; height: 24px; }
 
   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,6vw,6rem); }
@@ -135,7 +148,7 @@ const nav = [
   .menu-list--cats { columns: 2; column-gap: 2rem; }
   .menu-list--cats a {
     font-family: var(--font-ui); font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.16em; font-size: 1rem; padding-block: 0.5rem; display: inline-block;
+    letter-spacing: 0.16em; font-size: 1rem; padding-block: 0.75rem; min-height: 44px; display: flex; align-items: center;
     transition: color var(--t-fast), padding-left var(--t-fast);
   }
   .menu-list a:hover { color: var(--blood); }
@@ -185,18 +198,30 @@ const nav = [
   const srch = document.querySelector('[data-search]');
 
   const menuBtn = document.querySelector('[data-menu-open]');
-  const setOpen = (el: Element | null, open: boolean) => {
+  const searchBtn = document.querySelector('[data-search-open]');
+  let lastTrigger: HTMLElement | null = null;
+  const setOpen = (el: Element | null, open: boolean, trigger?: HTMLElement) => {
     if (!el) return;
+    if (open) lastTrigger = trigger || (document.activeElement as HTMLElement);
     el.classList.toggle('is-open', open);
     el.setAttribute('aria-hidden', String(!open));
     root.style.overflow = open ? 'hidden' : '';
     if (el === menu) menuBtn?.setAttribute('aria-expanded', String(open));
-    if (open && el === srch) (el.querySelector('input') as HTMLInputElement | null)?.focus();
+    if (el === srch) searchBtn?.setAttribute('aria-expanded', String(open));
+    if (open) {
+      // move focus into the panel so keyboard users aren't stranded behind it
+      if (el === srch) (el.querySelector('input') as HTMLInputElement | null)?.focus();
+      else (el.querySelector('.menu-list a') as HTMLElement | null)?.focus();
+    } else {
+      // return focus to whatever opened it
+      lastTrigger?.focus?.();
+      lastTrigger = null;
+    }
   };
 
-  document.querySelector('[data-menu-open]')?.addEventListener('click', () => setOpen(menu, true));
+  document.querySelector('[data-menu-open]')?.addEventListener('click', (e) => setOpen(menu, true, e.currentTarget as HTMLElement));
   document.querySelector('[data-menu-close]')?.addEventListener('click', () => setOpen(menu, false));
-  document.querySelector('[data-search-open]')?.addEventListener('click', () => setOpen(srch, true));
+  document.querySelector('[data-search-open]')?.addEventListener('click', (e) => setOpen(srch, true, e.currentTarget as HTMLElement));
   document.querySelector('[data-search-close]')?.addEventListener('click', () => setOpen(srch, false));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { setOpen(menu, false); setOpen(srch, false); }
@@ -254,7 +279,9 @@ const nav = [
       indexPromise = fetch(`${BASE}search-index.json`)
         .then((r) => r.json())
         .then((d) => { INDEX = d; })
-        .catch(() => { INDEX = []; });
+        // On a transient failure, clear the memo so the next keystroke retries
+        // instead of caching an empty index for the whole session.
+        .catch(() => { INDEX = null; indexPromise = null; });
     }
     return indexPromise;
   }
