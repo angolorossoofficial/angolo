@@ -97,7 +97,11 @@ const nav = [
   .hd-menu:hover span:nth-child(2) { transform: scaleX(0.6); transform-origin: left; }
 
   .logo { display: flex; align-items: center; gap: 0.7rem; justify-self: center; }
-  .logo-mark { width: auto; height: 38px; filter: drop-shadow(0 0 9px var(--blood-deep)); }
+  /* No glow while the header is transparent — over the bright hero photo the
+     red drop-shadow reads as haze. It only earns its glow once the nav bar
+     darkens on scroll (see .hd[data-scrolled] .logo-mark below). */
+  .logo-mark { width: auto; height: 38px; filter: none; transition: filter var(--t-fast); }
+  .hd[data-scrolled] .logo-mark { filter: drop-shadow(0 0 9px var(--blood-deep)); }
   .logo-text { display: flex; flex-direction: column; line-height: 1; }
   .logo-name {
     font-family: var(--font-display); text-transform: uppercase;

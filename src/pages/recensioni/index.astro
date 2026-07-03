@@ -5,9 +5,8 @@ import { reviewsByDate, categories } from '../../data/sample.js';
 
 const all = reviewsByDate();
 const years = [...new Set(all.map((r) => r.year))].sort((a, b) => b - a);
-const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
 ---
-<Base title="Archivio — Angolo Rosso" description="Tutte le recensioni di cinema horror: filtra per categoria, anno, genere e voto, o cerca un titolo.">
+<Base title="Archivio — Angolo Rosso" description="Tutte le recensioni di cinema horror: filtra per categoria, anno e voto, o cerca un titolo.">
   <section class="arc section">
     <div class="wrap">
       <header class="arc-head" data-reveal>
@@ -26,9 +25,6 @@ const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
         <div class="arc-selects">
           <label class="arc-field"><span class="label">Anno</span>
             <select id="arc-year"><option value="">Tutti</option>{years.map((y) => <option value={y}>{y}</option>)}</select>
-          </label>
-          <label class="arc-field"><span class="label">Genere</span>
-            <select id="arc-genre"><option value="">Tutti</option>{genres.map((g) => <option value={g}>{g}</option>)}</select>
           </label>
           <label class="arc-field"><span class="label">Voto min.</span>
             <select id="arc-vote"><option value="0">Tutti</option><option value="6">6+</option><option value="7">7+</option><option value="8">8+</option><option value="9">9+</option></select>
@@ -97,7 +93,6 @@ const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
 <script>
   const q = document.getElementById('arc-q') as HTMLInputElement;
   const yearSel = document.getElementById('arc-year') as HTMLSelectElement;
-  const genreSel = document.getElementById('arc-genre') as HTMLSelectElement;
   const voteSel = document.getElementById('arc-vote') as HTMLSelectElement;
   const chips = Array.from(document.querySelectorAll('.chip')) as HTMLButtonElement[];
   const items = Array.from(document.querySelectorAll('.arc-item')) as HTMLElement[];
@@ -112,7 +107,6 @@ const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
   function apply() {
     const text = q.value.trim().toLowerCase();
     const year = yearSel.value;
-    const genre = genreSel.value.toLowerCase();
     const minVote = Number(voteSel.value);
     let shown = 0;
 
@@ -120,7 +114,6 @@ const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
       const ok =
         (!cat || el.dataset.cat === cat) &&
         (!year || el.dataset.year === year) &&
-        (!genre || (el.dataset.genres || '').includes(genre)) &&
         Number(el.dataset.vote) >= minVote &&
         (!text || (el.dataset.text || '').includes(text));
       el.classList.toggle('is-hidden', !ok);
@@ -139,6 +132,6 @@ const genres = [...new Set(all.flatMap((r) => r.genres))].sort();
       apply();
     })
   );
-  [q, yearSel, genreSel, voteSel].forEach((el) => el.addEventListener('input', apply));
+  [q, yearSel, voteSel].forEach((el) => el.addEventListener('input', apply));
   apply();
 </script>

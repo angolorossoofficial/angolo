@@ -112,10 +112,14 @@ ul { list-style: none; padding: 0; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain 0.9s steps(3) infinite;
 }
+/* Shift the tiled noise via background-position, NOT transform: the fixed
+   full-viewport box never moves, so its edges never expose or force the
+   multiply-blended vignette to repaint — kills the "tendina" side flicker.
+   The 160×160 tile repeats, so position shifts stay seamless. */
 @keyframes grain {
-  0%,100% { transform: translate(0,0); }
-  33% { transform: translate(-2%, 1%); }
-  66% { transform: translate(1%, -2%); }
+  0%,100% { background-position: 0 0; }
+  33% { background-position: -32px 24px; }
+  66% { background-position: 24px -32px; }
 }
 @media (prefers-reduced-motion: reduce) { .fx-grain { animation: none; } }
 
