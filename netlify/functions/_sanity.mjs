@@ -19,6 +19,16 @@ export const writeClient = createClient({
   useCdn: false,
 })
 
+// Tokenless public-read client for validation reads (slug existence). The
+// dataset is public-read, so this must NOT carry the write token — an invalid
+// token would 401 even a public read and wrongly fail validation.
+const readClient = createClient({
+  projectId: PROJECT_ID,
+  dataset: DATASET,
+  apiVersion: '2021-10-21',
+  useCdn: true,
+})
+
 // --- abuse controls -------------------------------------------------------
 // Browser cross-site POSTs carry an Origin header; reject any that isn't ours.
 // (Absent Origin is allowed: same-origin navigations/no-cors edge cases. Scripted
@@ -39,7 +49,7 @@ export const originAllowed = (req) => {
 export const reviewExists = async (slug) => {
   if (!slug) return false
   try {
-    const n = await writeClient.fetch('count(*[_type=="review" && slug.current==$slug])', {slug})
+    const n = await readClient.fetch('count(*[_type=="review" && slug.current==$slug])', {slug})
     return n > 0
   } catch {
     return false
