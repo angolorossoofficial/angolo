@@ -67,7 +67,8 @@ export const voteDedupeId = (req, slug) => {
     'unknown'
   const salt = process.env.VOTE_SALT || 'ar-vote-v1'
   const h = createHash('sha256').update(`${salt}|${ip}|${slug}`).digest('hex').slice(0, 24)
-  return `vote.${slug}.${h}`.replace(/[^a-zA-Z0-9._-]/g, '-')
+  // dash-joined id (no dots) — keep the _id shape simple and unambiguous
+  return `vote-${slug}-${h}`.replace(/[^a-zA-Z0-9_-]/g, '-')
 }
 
 export const json = (body, status = 200) =>

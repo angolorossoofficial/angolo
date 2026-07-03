@@ -26,9 +26,9 @@ export default async (req) => {
   if (!(await reviewExists(reviewSlug))) return json({ok: false, error: 'review'}, 422)
 
   try {
-    // createIfNotExists = idempotent per device/IP: a repeat vote is a no-op,
-    // so a single client can't inflate the tally.
-    await writeClient.createIfNotExists({
+    // Deterministic per-(review,IP) _id: a repeat vote conflicts (409) and is
+    // treated as success below, so one device/IP counts once.
+    await writeClient.create({
       _id: voteDedupeId(req, reviewSlug),
       _type: 'vote',
       value,
@@ -37,6 +37,10 @@ export default async (req) => {
       createdAt: new Date().toISOString(),
     })
   } catch (err) {
+    // Already voted from this device/IP — idempotent success, not an error.
+    if (err?.statusCode === 409 || /already exists|conflict/i.test(err?.message || '')) {
+      return json({ok: true, status: 'already-voted'})
+    }
     console.error('vote write failed', err?.message || err)
     return json({ok: false, error: 'write'}, 502)
   }
