@@ -5,7 +5,7 @@
 //
 // Exports the SAME shape the prototype used, so the UI keeps working:
 //   categories     [{ slug, title, tagline, atmo }]
-//   reviews        [{ slug, title, originalTitle, category(slug), year, director,
+//   reviews        [{ slug, title, originalTitle, categories[slug], category(=first), year, director,
 //                     cast[], runtime, country, genres[], excerpt, publishedAt,
 //                     highlight, trailer, ratings{...axes, finale}, atmo, body[] }]
 //   RATING_AXES, getCategory(slug), reviewsByDate(), featuredReviews()
@@ -117,8 +117,8 @@ const REVIEW_Q = `*[_type=="review" && defined(slug.current)]|order(publishedAt 
   "slug": slug.current,
   title, originalTitle, year, director, cast, runtime, country, genres,
   excerpt, publishedAt, highlight, trailer,
-  "category": category->slug.current,
-  "categoryAtmo": category->atmo,
+  "categories": coalesce(categories[]->slug.current, [category->slug.current]),
+  "categoryAtmo": coalesce(categories[0]->atmo, category->atmo),
   "posterUrl": poster.asset->url,
   "galleryUrls": gallery[].asset->url,
   atmo,
@@ -190,11 +190,17 @@ export const reviews = (rawReviews || []).map((r) => {
 
   const atmo = posterBg(r.posterUrl) || r.atmo || r.categoryAtmo || DEFAULT_ATMO;
 
+  // A review can sit in more than one category (e.g. Occulto + Splatter).
+  // `categories` is the full list; `category` stays as the FIRST one so older
+  // single-category call sites keep working.
+  const cats = (r.categories || []).filter(Boolean);
+
   return {
     slug: r.slug,
     title: r.title,
     originalTitle: r.originalTitle || r.title,
-    category: r.category || null,
+    categories: cats,
+    category: cats[0] || null,
     year: r.year ?? null,
     director: r.director || '',
     cast: r.cast || [],

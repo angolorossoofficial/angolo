@@ -4,14 +4,14 @@ import { getCategory } from '../data/sample.js';
 
 interface Props { review: any; index?: number; }
 const { review, index = 0 } = Astro.props;
-const cat = getCategory(review.category);
+const catNames = review.categories.map((s: string) => getCategory(s)?.title).filter(Boolean).join(' · ');
 ---
 <article class="card" data-reveal style={`transition-delay:${(index % 3) * 0.07}s`}>
   <a href={withBase(`/recensioni/${review.slug}`)} class="card-link">
     <div class="card-poster">
       <span class="card-atmo" style={`background:${review.atmo}`} aria-hidden="true"></span>
       <span class="card-grad" aria-hidden="true"></span>
-      <span class="card-cat label">{cat?.title}</span>
+      <span class="card-cat label">{catNames}</span>
       <span class="card-vote"><b>{review.ratings.finale}</b><small>/10</small></span>
     </div>
     <div class="card-body">

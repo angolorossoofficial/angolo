@@ -12,8 +12,10 @@ export function getStaticPaths() {
 }
 
 const { review } = Astro.props;
-const cat = getCategory(review.category);
-const related = reviews.filter((r) => r.category === review.category && r.slug !== review.slug).slice(0, 3);
+const cats = review.categories.map((slug: string) => getCategory(slug)).filter(Boolean);
+const related = reviews
+  .filter((r) => r.slug !== review.slug && r.categories.some((c: string) => review.categories.includes(c)))
+  .slice(0, 3);
 const date = new Date(review.publishedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
 
 // Public read config for the client-side engagement widget (comments + votes).
@@ -47,7 +49,11 @@ const jsonld = {
       <span class="rev-atmo" style={`background:${review.atmo}`} aria-hidden="true"></span>
       <span class="rev-hero-grad" aria-hidden="true"></span>
       <div class="wrap rev-hero-in">
-        <a href={withBase(`/categoria/${review.category}`)} class="rev-cat label">{cat?.title}</a>
+        <span class="rev-cats">
+          {cats.map((c: any) => (
+            <a href={withBase(`/categoria/${c.slug}`)} class="rev-cat label">{c.title}</a>
+          ))}
+        </span>
         <h1 class="rev-title display">{review.title}</h1>
         <p class="rev-orig">{review.originalTitle} · {review.year}</p>
         <p class="rev-byline label">Recensione della redazione · {date}</p>
@@ -177,7 +183,9 @@ const jsonld = {
   .rev-atmo { position: absolute; inset: 0; transform: scale(1.05); }
   .rev-hero-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.5) 0%, transparent 30%, rgba(7,7,10,.95) 92%); }
   .rev-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 4rem); }
-  .rev-cat { display: inline-block; color: var(--blood); margin-bottom: 1rem; }
+  .rev-cats { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin-bottom: 1rem; }
+  .rev-cat { display: inline-block; color: var(--blood); }
+  .rev-cat:hover { color: var(--blood-bright); }
   .rev-title { font-size: var(--fs-h1); max-width: 18ch; }
   .rev-orig { font-family: var(--font-read); font-style: italic; color: var(--bone-dim); margin-top: 0.8rem; font-size: 1.1rem; }
   .rev-byline { margin-top: 1rem; }
@@ -188,7 +196,9 @@ const jsonld = {
     color: var(--bone); border-left: 3px solid var(--blood); padding-left: 1.4rem; margin-bottom: 2.2rem;
   }
   .rev-body { max-width: var(--maxw-read); }
-  .rev-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: var(--bone-dim); margin-bottom: 1.5rem; }
+  /* prose reads brighter than the generic dim tone — client asked for a less
+     "transparent", more legible review body */
+  .rev-body p { font-family: var(--font-read); font-size: clamp(1.18rem, 1.35vw, 1.34rem); line-height: 1.85; color: color-mix(in srgb, var(--bone) 62%, var(--bone-dim)); margin-bottom: 1.5rem; }
   /* drop-cap ONLY on the first paragraph (was: every paragraph).
      Float fallback for Firefox (no initial-letter support); browsers that DO
      support initial-letter get the cleaner metric via @supports below. */
@@ -221,7 +231,10 @@ const jsonld = {
 
   .rev-trailer { margin-top: 3rem; }
   .rev-embed { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #000 center/cover; overflow: hidden; }
-  .rev-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  /* the iframe is injected client-side after cookie consent, so it has no Astro
+     scope attribute — without :global() it rendered at the browser default
+     304×154 inside the 16:9 box (the client's "trailer dimensions" bug) */
+  .rev-embed :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .rev-yt {
     position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
@@ -282,11 +295,16 @@ const jsonld = {
   .eng-comments { border-top: 1px solid var(--line); padding-top: 1.8rem; }
   .eng-list { list-style: none; display: flex; flex-direction: column; gap: 1.3rem; margin: 1.2rem 0 2rem; padding: 0; }
   .eng-empty { color: var(--ash); font-family: var(--font-read); font-style: italic; }
-  .eng-c { border-left: 2px solid var(--blood-deep); padding-left: 1rem; }
-  .eng-c-head { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
-  .eng-c-name { font: 700 0.92rem var(--font-ui); color: var(--bone); overflow-wrap: anywhere; }
-  .eng-c-date { font: 500 0.72rem var(--font-ui); letter-spacing: 0.04em; color: var(--ash); }
-  .eng-c-msg { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+  /* comment items are created client-side (createElement) so they never get
+     Astro's scope attribute — style them via :global() anchored to the scoped
+     .eng-list, or none of these rules apply. */
+  .eng-list :global(.eng-c) { border-left: 2px solid var(--blood-deep); padding-left: 1rem; }
+  /* divider between comments (the flex gap alone read as one block) */
+  .eng-list :global(.eng-c + .eng-c) { border-top: 1px solid var(--line); padding-top: 1.3rem; }
+  .eng-list :global(.eng-c-head) { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+  .eng-list :global(.eng-c-name) { font: 700 0.92rem var(--font-ui); color: var(--blood-bright); overflow-wrap: anywhere; }
+  .eng-list :global(.eng-c-date) { font: 500 0.62rem var(--font-ui); letter-spacing: 0.04em; color: var(--ash); }
+  .eng-list :global(.eng-c-msg) { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 
   .eng-form { display: flex; flex-direction: column; gap: 0.8rem; }
   .eng-fields { display: grid; grid-template-columns: 1fr; gap: 0.8rem; }

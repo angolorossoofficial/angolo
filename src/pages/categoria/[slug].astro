@@ -10,7 +10,7 @@ export function getStaticPaths() {
 }
 
 const { category } = Astro.props;
-const list = reviewsByDate().filter((r) => r.category === category.slug);
+const list = reviewsByDate().filter((r) => r.categories.includes(category.slug));
 ---
 <Base title={`${category.title} — Angolo Rosso`} description={`Recensioni horror della categoria ${category.title}. ${category.tagline}.`}>
   <section class:list={['cat-hero', category.hasCover && 'cat-hero--photo']}>
@@ -44,8 +44,9 @@ const list = reviewsByDate().filter((r) => r.category === category.slug);
   .cat-hero { position: relative; min-height: 52vh; display: flex; align-items: flex-end; overflow: hidden; padding-top: 6rem; }
   .cat-hero-atmo { position: absolute; inset: 0; transform: scale(1.05); }
   .cat-hero-tint { position: absolute; inset: 0; opacity: 0.9; transform: scale(1.05); }
-  /* real cover photo -> light colour grade instead of the heavy accent wash */
-  .cat-hero--photo .cat-hero-tint { opacity: 0.24; }
+  /* real cover photo -> no accent wash: show the uploaded artwork's true
+     colours (even a light wash cast purple on the Occulto cover) */
+  .cat-hero--photo .cat-hero-tint { display: none; }
   .cat-hero-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,7,10,.55), transparent 35%, rgba(7,7,10,.95)); }
   .cat-hero-frame { inset: clamp(14px,2vw,30px) !important; }
   .cat-hero-in { position: relative; z-index: 2; padding-bottom: clamp(2rem, 5vw, 3.5rem); }

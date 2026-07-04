@@ -42,7 +42,7 @@ const years = [...new Set(all.map((r) => r.year))].filter((y) => y != null).sort
       <h2 class="vh">Elenco delle recensioni</h2>
       <div class="arc-grid" id="arc-grid">
         {all.map((r, i) => (
-          <div class="arc-item" data-cat={r.category} data-year={r.year}
+          <div class="arc-item" data-cat={r.categories.join(' ')} data-year={r.year}
             data-vote={r.ratings.finale}
             data-text={`${r.title} ${r.director} ${r.originalTitle}`.toLowerCase()}>
             <ReviewCard review={r} index={i} />
@@ -116,7 +116,8 @@ const years = [...new Set(all.map((r) => r.year))].filter((y) => y != null).sort
 
     items.forEach((el) => {
       const ok =
-        (!cat || el.dataset.cat === cat) &&
+        // data-cat holds ALL the review's category slugs (space-separated)
+        (!cat || (el.dataset.cat || '').split(' ').includes(cat)) &&
         (!year || el.dataset.year === year) &&
         Number(el.dataset.vote) >= minVote &&
         (!text || (el.dataset.text || '').includes(text));

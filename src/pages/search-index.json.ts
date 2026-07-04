@@ -10,7 +10,7 @@ export const GET: APIRoute = () => {
     orig: r.originalTitle,
     director: r.director,
     year: r.year,
-    cat: getCategory(r.category)?.title || '',
+    cat: r.categories.map((s: string) => getCategory(s)?.title).filter(Boolean).join(' · '),
     poster: r.shareImage || null,
   }));
   return new Response(JSON.stringify(idx), {

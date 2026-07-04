@@ -59,10 +59,10 @@ import { categories } from '../data/sample.js';
     transition: opacity var(--t-med);
   }
   .cat-link:hover .cat-tint { opacity: 0.7; }
-  /* real cover photo present -> drop the wash to a light colour grade so the
-     photo reads; the bottom .cat-noise gradient still keeps the title legible */
-  .cat-link--photo .cat-tint { opacity: 0.2; }
-  .cat-link--photo:hover .cat-tint { opacity: 0.12; }
+  /* real cover photo present -> NO accent wash at all: the client's uploaded
+     artwork must show its true colours (a 0.2 wash still cast purple on the
+     Occulto cover). The bottom .cat-noise gradient keeps the title legible. */
+  .cat-link--photo .cat-tint { display: none; }
   .cat-link--photo .cat-atmo { filter: saturate(1) brightness(0.92); }
   .cat-noise {
     position: absolute; inset: 0;

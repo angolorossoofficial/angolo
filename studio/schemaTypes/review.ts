@@ -27,12 +27,14 @@ export const review = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'category',
-      title: 'Categoria',
-      type: 'reference',
-      to: [{type: 'category'}],
+      name: 'categories',
+      title: 'Categorie',
+      description:
+        'Una o più categorie (es. Occulto + Splatter). La prima è quella principale: decide il colore di sfondo di riserva.',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'category'}]}],
       group: 'main',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().min(1).unique(),
     }),
     defineField({
       name: 'excerpt',
@@ -171,7 +173,7 @@ export const review = defineType({
     },
   ],
   preview: {
-    select: {title: 'title', cat: 'category.title', media: 'poster', voto: 'ratings.votoFinale'},
+    select: {title: 'title', cat: 'categories.0.title', media: 'poster', voto: 'ratings.votoFinale'},
     prepare({title, cat, media, voto}) {
       const bits = [cat, voto != null ? `Voto ${voto}` : null].filter(Boolean)
       return {title, subtitle: bits.join(' · '), media}
