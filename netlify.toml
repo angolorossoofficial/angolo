@@ -2,12 +2,22 @@
 # Connect this repo in Netlify; a Sanity webhook -> Netlify build hook rebuilds
 # the site whenever the redazione publishes in the Studio.
 [build]
-  command = "npm run build"
+  # Builds the Astro site, then builds the Sanity Studio into dist/studio so
+  # the redazione edits content at angolorosso.com/studio (self-hosted — the
+  # *.sanity.studio host now force-redirects into the Sanity Dashboard, which
+  # broke direct Studio access for the client).
+  # --no-auto-updates pins the Studio to the version in studio/package-lock.json
+  # so Sanity can't break it remotely; upgrade = bump deps + redeploy.
+  command = "npm run build && cd studio && npm ci --no-audit --no-fund && npx sanity build ../dist/studio -y --no-auto-updates"
   publish = "dist"
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "20"
+  # sanity v6 requires Node >= 22.12 (Astro 5 is fine on 22 as well).
+  NODE_VERSION = "22"
+  # Public identifier (already shipped in the site's client bundle) — not a secret.
+  SANITY_STUDIO_PROJECT_ID = "82x61wc7"
+  SANITY_STUDIO_DATASET = "production"
 
 [functions]
   node_bundler = "esbuild"
@@ -19,7 +29,24 @@
 # These need a server-side env var SANITY_WRITE_TOKEN (Sanity Editor token).
 # Set it in Netlify: Site settings -> Environment variables. Never commit it.
 
-# SPA-style 404 handled by Astro's static 404 page; no redirects needed.
+# SPA-style 404 handled by Astro's static 404 page.
+
+# The Studio is a single-page app: deep links like /studio/structure/review
+# have no file on disk and must fall back to the Studio's index.html.
+# force is left false so real assets under /studio/static/* keep being served.
+[[redirects]]
+  from = "/studio/*"
+  to = "/studio/index.html"
+  status = 200
+
+# sanity build applies the /studio base path to the JS bundle but not to the
+# favicon/manifest <link> tags, which stay root-absolute (/static/...). The
+# Astro site has no /static directory, so aliasing it to the Studio's assets
+# is collision-free.
+[[redirects]]
+  from = "/static/*"
+  to = "/studio/static/:splat"
+  status = 200
 
 # --- Security headers -------------------------------------------------------
 # CSP is tuned to the site's real sources: bundled JS/CSS ('self'), inline
@@ -27,6 +54,14 @@
 # (data:), Sanity image CDN + query API, and the YouTube trailer embeds. The
 # actual injection sinks are also escaped in code, so this is defense-in-depth.
 # ('unsafe-inline' on script can be tightened to hashes/nonces later.)
+#
+# NOTE on /studio: Netlify does NOT replace a header when a more specific
+# [[headers]] block redefines it — it sends BOTH values, and browsers enforce
+# the intersection of multiple CSPs (i.e. the strictest). So the Studio's
+# needs must be folded into this single global policy instead of a /studio/*
+# override: bare https://api.sanity.io in connect-src (the *.api.sanity.io
+# wildcard does not match the apex), blob: image previews for asset uploads,
+# Google avatar images, and blob: workers.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -35,4 +70,4 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.sanity.io; font-src 'self' data:; connect-src 'self' https://*.apicdn.sanity.io https://*.api.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://core.sanity-cdn.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io https://lh3.googleusercontent.com; font-src 'self' data: https://studio-static.sanity.io; connect-src 'self' https://api.sanity.io https://*.api.sanity.io https://*.apicdn.sanity.io https://cdn.sanity.io https://telemetry.sanity.io; worker-src 'self' blob:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
