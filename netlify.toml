@@ -24,8 +24,9 @@
 
 # Serverless endpoints for public engagement (comments + votes). The custom
 # routes are declared in each function via `export const config = { path }`:
-#   POST /api/comment  -> netlify/functions/comment.mjs
-#   POST /api/vote     -> netlify/functions/vote.mjs
+#   POST /api/comment       -> netlify/functions/comment.mjs
+#   POST /api/vote          -> netlify/functions/vote.mjs
+#   POST /api/comment-react -> netlify/functions/comment-react.mjs
 # These need a server-side env var SANITY_WRITE_TOKEN (Sanity Editor token).
 # Set it in Netlify: Site settings -> Environment variables. Never commit it.
 

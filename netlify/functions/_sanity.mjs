@@ -56,19 +56,44 @@ export const reviewExists = async (slug) => {
   }
 }
 
+// Reject reactions for comments that aren't real, published (approved) ones.
+// Returns the comment's reviewSlug when valid so the reaction can carry it.
+export const approvedCommentSlug = async (commentId) => {
+  if (!commentId) return null
+  try {
+    const slug = await readClient.fetch(
+      '*[_type=="comment" && _id==$id && approved==true][0].reviewSlug',
+      {id: commentId},
+    )
+    return slug || null
+  } catch {
+    return null
+  }
+}
+
+const clientIp = (req) =>
+  req.headers.get('x-nf-client-connection-ip') ||
+  (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
+  'unknown'
+
 // Deterministic vote _id per (review, client-IP) → createIfNotExists makes votes
 // idempotent server-side: one vote per device/IP survives even if localStorage is
 // cleared or the endpoint is hit raw. Only a salted hash of the IP is used (no raw
 // IP stored); tune the salt via VOTE_SALT.
 export const voteDedupeId = (req, slug) => {
-  const ip =
-    req.headers.get('x-nf-client-connection-ip') ||
-    (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
-    'unknown'
   const salt = process.env.VOTE_SALT || 'ar-vote-v1'
-  const h = createHash('sha256').update(`${salt}|${ip}|${slug}`).digest('hex').slice(0, 24)
+  const h = createHash('sha256').update(`${salt}|${clientIp(req)}|${slug}`).digest('hex').slice(0, 24)
   // dash-joined id (no dots) — keep the _id shape simple and unambiguous
   return `vote-${slug}-${h}`.replace(/[^a-zA-Z0-9_-]/g, '-')
+}
+
+// Same idea per (comment, client-IP): one like/dislike per device/IP per
+// comment. The reaction kind is NOT part of the id, so a device can't both
+// like and dislike the same comment.
+export const reactionDedupeId = (req, commentId) => {
+  const salt = process.env.VOTE_SALT || 'ar-vote-v1'
+  const h = createHash('sha256').update(`${salt}|${clientIp(req)}|creact|${commentId}`).digest('hex').slice(0, 24)
+  return `creact-${commentId}-${h}`.replace(/[^a-zA-Z0-9_-]/g, '-')
 }
 
 export const json = (body, status = 200) =>

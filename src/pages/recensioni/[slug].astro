@@ -305,6 +305,21 @@ const jsonld = {
   .eng-list :global(.eng-c-name) { font: 700 0.92rem var(--font-ui); color: var(--blood-bright); overflow-wrap: anywhere; }
   .eng-list :global(.eng-c-date) { font: 500 0.62rem var(--font-ui); letter-spacing: 0.04em; color: var(--ash); }
   .eng-list :global(.eng-c-msg) { font-family: var(--font-read); color: var(--bone-dim); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+  /* like/dislike bar (also createElement'd → :global) */
+  .eng-list :global(.eng-c-react) { display: flex; gap: 0.6rem; margin-top: 0.6rem; }
+  .eng-list :global(.eng-rbtn) {
+    display: inline-flex; align-items: center; gap: 0.45rem; min-height: 36px;
+    background: var(--void-2); border: 1px solid var(--line); color: var(--bone-dim);
+    font: 600 0.8rem var(--font-ui); padding: 0.3rem 0.7rem; border-radius: 2px;
+    cursor: pointer; transition: border-color var(--t-fast), color var(--t-fast);
+  }
+  /* monochrome thumbs by default — the chosen one gets its color back */
+  .eng-list :global(.eng-rbtn-ic) { filter: grayscale(1); opacity: 0.85; }
+  .eng-list :global(.eng-rbtn:hover:not(:disabled)) { border-color: var(--blood); color: var(--bone); }
+  .eng-list :global(.eng-rbtn:disabled) { cursor: default; opacity: 0.55; }
+  .eng-list :global(.eng-rbtn.is-chosen) { border-color: var(--blood); color: var(--blood-bright); opacity: 1; }
+  .eng-list :global(.eng-rbtn.is-chosen .eng-rbtn-ic) { filter: none; opacity: 1; }
+  .eng-list :global(.eng-rbtn-n) { font-variant-numeric: tabular-nums; }
 
   .eng-form { display: flex; flex-direction: column; gap: 0.8rem; }
   .eng-fields { display: grid; grid-template-columns: 1fr; gap: 0.8rem; }
@@ -360,7 +375,9 @@ const jsonld = {
     // --- live data from Sanity (public read) ---------------------------------
     const QUERY =
       '{' +
-      '"comments":*[_type=="comment"&&reviewSlug==$slug&&approved==true]|order(createdAt asc){name,message,createdAt},' +
+      '"comments":*[_type=="comment"&&reviewSlug==$slug&&approved==true]|order(createdAt asc){_id,name,message,createdAt,' +
+      '"likes":count(*[_type=="commentReaction"&&commentId==^._id&&reaction=="like"]),' +
+      '"dislikes":count(*[_type=="commentReaction"&&commentId==^._id&&reaction=="dislike"])},' +
       '"voteAvg":math::avg(*[_type=="vote"&&reviewSlug==$slug].value),' +
       '"voteCount":count(*[_type=="vote"&&reviewSlug==$slug])' +
       '}';
@@ -389,7 +406,16 @@ const jsonld = {
       cntEl.textContent = count === 1 ? '1 voto' : `${count} voti`;
     }
 
-    function renderComments(list: Array<{ name?: string; message?: string; createdAt?: string }>) {
+    type CommentRow = {
+      _id?: string;
+      name?: string;
+      message?: string;
+      createdAt?: string;
+      likes?: number;
+      dislikes?: number;
+    };
+
+    function renderComments(list: CommentRow[]) {
       const ul = $('[data-comments]');
       const empty = sec!.querySelector('[data-comments-empty]') as HTMLElement | null;
       if (!ul) return;
@@ -399,7 +425,11 @@ const jsonld = {
         return;
       }
       if (empty) empty.hidden = true;
-      for (const c of list) {
+      // Dal commento con più "mi piace" a quello con meno; a parità di like
+      // resta l'ordine cronologico (la query arriva già createdAt asc e il
+      // sort è stabile).
+      const ordered = [...list].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      for (const c of ordered) {
         const li = document.createElement('li');
         li.className = 'eng-c';
         const head = document.createElement('div');
@@ -419,8 +449,83 @@ const jsonld = {
         msg.className = 'eng-c-msg';
         msg.textContent = c.message || '';
         li.append(head, msg);
+        if (c._id) li.appendChild(reactionBar(c._id, c.likes || 0, c.dislikes || 0));
         ul.appendChild(li);
       }
+    }
+
+    // 👍/👎 per comment. One reaction per device (localStorage) — the server
+    // also dedups per IP, so clearing storage doesn't double-count.
+    function reactionBar(commentId: string, likes: number, dislikes: number): HTMLElement {
+      const bar = document.createElement('div');
+      bar.className = 'eng-c-react';
+      const RKEY = `ar-creact-${commentId}`;
+      const counts: Record<'like' | 'dislike', number> = { like: likes, dislike: dislikes };
+      const btns: Partial<Record<'like' | 'dislike', HTMLButtonElement>> = {};
+
+      const setDone = (chosen: 'like' | 'dislike' | null) => {
+        for (const kind of ['like', 'dislike'] as const) {
+          const b = btns[kind];
+          if (!b) continue;
+          b.disabled = true;
+          b.setAttribute('aria-pressed', String(kind === chosen));
+          b.classList.toggle('is-chosen', kind === chosen);
+        }
+      };
+      const unlock = () => {
+        for (const kind of ['like', 'dislike'] as const) {
+          const b = btns[kind];
+          if (!b) continue;
+          b.disabled = false;
+          b.setAttribute('aria-pressed', 'false');
+          b.classList.remove('is-chosen');
+        }
+      };
+
+      for (const kind of ['like', 'dislike'] as const) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'eng-rbtn';
+        b.setAttribute('aria-pressed', 'false');
+        b.setAttribute('aria-label', kind === 'like' ? 'Mi piace' : 'Non mi piace');
+        const ic = document.createElement('span');
+        ic.className = 'eng-rbtn-ic';
+        ic.setAttribute('aria-hidden', 'true');
+        ic.textContent = kind === 'like' ? '👍' : '👎';
+        const n = document.createElement('span');
+        n.className = 'eng-rbtn-n';
+        n.textContent = String(counts[kind]);
+        b.append(ic, n);
+        b.addEventListener('click', async () => {
+          if (b.disabled) return;
+          setDone(kind); // optimistic lock
+          try {
+            const res = await fetch('/api/comment-react', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ commentId, reaction: kind }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) throw new Error(data.error || 'fail');
+            // Bump the visible count only for a newly counted reaction — a 409
+            // ("already-reacted", e.g. localStorage cleared) is already tallied.
+            if (data.status !== 'already-reacted') {
+              n.textContent = String(counts[kind] + 1);
+            }
+            try { localStorage.setItem(RKEY, kind); } catch {}
+          } catch {
+            unlock(); // let the visitor retry
+          }
+        });
+        btns[kind] = b;
+        bar.appendChild(b);
+      }
+
+      let prior: string | null = null;
+      try { prior = localStorage.getItem(RKEY); } catch {}
+      if (prior === 'like' || prior === 'dislike') setDone(prior);
+
+      return bar;
     }
 
     // --- public vote ---------------------------------------------------------
