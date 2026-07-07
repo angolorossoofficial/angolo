@@ -383,8 +383,12 @@ const jsonld = {
       '}';
 
     async function load() {
+      // api (not apicdn): the CDN caches a query URL for up to an hour and
+      // sync-tag invalidation does not purge it, so fresh votes/comments/likes
+      // took ages to show up. Engagement data must read live; traffic is small
+      // enough that the uncached API is fine.
       const url =
-        `https://${project}.apicdn.sanity.io/v2021-10-21/data/query/${dataset}` +
+        `https://${project}.api.sanity.io/v2021-10-21/data/query/${dataset}` +
         `?query=${encodeURIComponent(QUERY)}&%24slug=${encodeURIComponent(JSON.stringify(slug))}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('read ' + res.status);
@@ -566,7 +570,7 @@ const jsonld = {
         if (!res.ok) throw new Error('vote ' + res.status);
         try { localStorage.setItem(VKEY, String(value)); } catch {}
         showVoted(String(value));
-        load().catch(() => {}); // refresh tally (CDN may lag a few seconds)
+        load().catch(() => {}); // refresh tally (live API read)
       } catch {
         if (btn) btn.disabled = false;
         if (voteMsg) { voteMsg.textContent = 'Voto non riuscito, riprova.'; voteMsg.hidden = false; voteMsg.classList.add('is-error'); }
